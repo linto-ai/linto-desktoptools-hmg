@@ -1,0 +1,7 @@
+*.vscode*
+*__pycache__*
+*.user_preferences.json
+build/
+dist/
+hmg.spec
+*__pycache__
