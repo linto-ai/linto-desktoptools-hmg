@@ -20,14 +20,14 @@ There are 2 options to use this software:
 
 ### Release
 
-**Release version: 0.1** 
+**Release version: Unavailable** 
 
 Binary have been generated using PyInstaller on Ubuntu 18.04.
-You can download the lastest release [there](https://github.com/linto-project/model-generator/releases/download/0.1/hmg-v0.1-x86_64.tar.gz)
+You can download the lastest release [there]() (Due to the [change of tensorflow version](https://github.com/pyinstaller/pyinstaller/issues/4400), release is unavailable).
 
 1. Extract the archive
 ```bash
-tar xzf mhg-v0.1-x86_64.tar.gz
+tar xzf $(ARCHIVE)
 ```
 A ```hmg/``` folder shall be extracted.
 
