@@ -7,8 +7,6 @@ from threading import Thread
 
 import numpy as np
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
 from sonopy import mfcc_spec
 from PyQt5 import QtCore, QtGui, QtWidgets, QtChart
 
@@ -53,6 +51,7 @@ class Infere(QtWidgets.QWidget):
         self.player = Player()
 
         #Connects
+        self.ui.threshold.valueChanged.connect(self.on_threshold_changed)
         self.ui.test_pb.clicked.connect(self.on_test_clicked)
         self.activation_spotted.connect(self.add_activated_sample)
         self.ui.checkAll.toggled.connect(self.check_all)
@@ -92,17 +91,18 @@ class Infere(QtWidgets.QWidget):
         graph_layout = QtWidgets.QHBoxLayout()
         self.ui.graph_placeholder.setLayout(graph_layout)
 
-        # Features chart
-        figure = Figure()
-        self.figure_canvas = FigureCanvas(figure)
-        self.feat_axes = figure.add_subplot(111)
-        #graph_layout.addWidget(self.figure_canvas)
-
         # Prediction chart
         self.chart = QtChart.QChart()
         self.chart_view = QtChart.QChartView(self.chart)
         self.chart_view.setRenderHint(QtGui.QPainter.Antialiasing)
         graph_layout.addWidget(self.chart_view)
+
+        self.threshold_serie = QtChart.QLineSeries()
+        self.threshold_serie.setName("threshold")
+        self.threshold_serie.setPen(QtGui.QPen(QtGui.QColor("black")))
+        self.threshold_serie.append(-GRAPH_RANGE, self.threshold)
+        self.threshold_serie.append(9001, self.threshold)
+        self.chart.addSeries(self.threshold_serie)
 
         self.series = [QtChart.QLineSeries() for _ in range(len(self.project.project_info['hotwords']))]
         for serie, label in zip(self.series, self.project.project_info['hotwords']):
@@ -113,7 +113,7 @@ class Infere(QtWidgets.QWidget):
 
     def update_output(self, values):
         for serie, v in zip(self.series, values):
-            serie.append(self.series[0].count() * self.project.features_info['hop_t'], v)
+            serie.append(self.series[0].count() * self.project.features_info['hop_t'], v)        
 
         self.chart.axisX().setRange((self.series[0].count()  - GRAPH_RANGE) * self.project.features_info['hop_t'], self.series[0].count() * self.project.features_info['hop_t'])
         self.chart_view.update()
@@ -127,6 +127,11 @@ class Infere(QtWidgets.QWidget):
                         rate=self.sample_rate,
                         input=True,
                         frames_per_buffer=self.hop_s)
+    
+    def on_threshold_changed(self, value):
+        self.threshold_serie.clear()
+        self.threshold_serie.append(-GRAPH_RANGE, self.threshold)
+        self.threshold_serie.append(9001, self.threshold)
         
     def init_inference_engine(self):
         self.kws = PredictFun(self.project.model_path)
