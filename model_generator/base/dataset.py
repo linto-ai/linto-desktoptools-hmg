@@ -79,12 +79,18 @@ class DataSet:
         return n_duplicate
         
 
-    def get_subset_by_label(self, label):
+    def get_subset_by_label(self, label:str):
         """ Returns a subset containing samples with given label. """
         subset = DataSet()
         subset.add_samples([sample for sample in self.samples if sample['label'] == (label.lower() if label is not None else None)])
         return subset
-
+    
+    def get_subset_by_labels(self, labels: list):
+        """ Returns a subset containing samples with given labels. """
+        subset = DataSet()
+        subset.add_samples([sample for sample in self.samples if sample['label'] in [label.lower() if label is not None else None for label in labels]])
+        return subset
+        
     def split_dataset(self, ratios: list, split_using_attr: bool = False):
         """ Splits the dataset to len(ratios) subsets using ratio. """
         n_samples = len(self.samples)
@@ -134,7 +140,6 @@ class DataSet:
                 result.add_samples(sample)
 
         return result
-
 
     def __add__(self, other):
         ret = DataSet()

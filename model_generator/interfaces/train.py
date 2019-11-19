@@ -51,6 +51,7 @@ class Train(QtWidgets.QWidget):
         self.ui.train_button.clicked.connect(self.on_train_clicked)
         self.ui.stop_button.clicked.connect(self.on_stop_clicked)
         self.ui.delete_PB.clicked.connect(self.on_delete_clicked)
+        self.ui.acc_stop_CB.stateChanged.connect(self.ui.acc_stop_value_SB.setEnabled)
 
     def data_set_updated(self):
         """ Called when dataset has been modified from an other tab"""
@@ -182,6 +183,7 @@ class Train(QtWidgets.QWidget):
         self.ui.train_button.setText("Train (Current epoch = {})".format(self.current_epoch))
         self.ui.train_button.setEnabled(True)
         self.ui.delete_PB.setEnabled(True)
+        self.project.model_info['set'] = True
         self.train_performed.emit()
 
     def on_stop_clicked(self):
@@ -206,7 +208,7 @@ class Train(QtWidgets.QWidget):
    
     def train_callback(self, epoch, logs = {}):
         """ Called during training at the end of each epoch"""
-        self.progress_display(epoch, self.target_epoch, "Training ...")
+        self.progress_display(epoch, self.target_epoch, "Training (Epoch ={})...".format(epoch))
         self.acc_serie.append(epoch, logs['accuracy'])
         self.val_acc_serie.append(epoch, logs['val_accuracy'])
         self.val_loss_serie.append(epoch, logs['val_loss'])
@@ -221,6 +223,11 @@ class Train(QtWidgets.QWidget):
 
         self.acc_chart_view.update()
         self.loss_chart_view.update()
+
+        if self.ui.acc_stop_CB.isChecked() and logs['val_accuracy'] >= self.ui.acc_stop_value_SB.value() / 100.:
+            self.model.stop_training = True
+            self.update_graph_range()
+
         QtWidgets.QApplication.instance().processEvents() # Refresh UI
 
     def training(self):
@@ -274,7 +281,7 @@ class Train(QtWidgets.QWidget):
         print(self.model.summary())  
 
         # Check and vectorize samples
-        if not self.vectorized:
+        if not self.vectorized and not self.ui.pos_only_CB.isChecked():
             self.validation_set, self.validation_set_output = [], []
             error_files = []
             hotwords = self.project.project_info['hotwords']
@@ -284,6 +291,11 @@ class Train(QtWidgets.QWidget):
 
             train_dataset.load(self.project.data_info['train_set'])
             val_dataset.load(self.project.data_info['val_set'])
+
+            # If train on keyword only is checked
+            if self.ui.pos_only_CB.isChecked():
+                train_dataset = train_dataset.get_subset_by_labels(self.project.project_info['hotwords'])
+                val_dataset = val_dataset.get_subset_by_labels(self.project.project_info['hotwords'])
 
             outputs = dict()
             outputs[None] = [0.0] * len(hotwords)
@@ -309,7 +321,8 @@ class Train(QtWidgets.QWidget):
                                                                              self.project.features_info,
                                                                              labels=[s[1] for s in unproc_val],
                                                                              progress_callback=self.progress_display)
-            self.vectorized = True        
+            if not self.ui.pos_only_CB.isChecked():
+                self.vectorized = True        
         self.progress_display(0, 1, "Training ...")
         self.ui.stop_button.setEnabled(True)
         QtWidgets.QApplication.instance().processEvents()
@@ -442,14 +455,6 @@ class Train(QtWidgets.QWidget):
     @n_epochs.setter
     def n_epochs(self, value):
         self.ui.n_epochs.setValue(value)
-
-    @property
-    def use_acc(self):
-        return self.ui.acc_train.isChecked()
-
-    @use_acc.setter
-    def use_acc(self, value: bool):
-        self.ui.acc_train.setChecked(value)
 
     @property
     def batch_size(self) -> int:

@@ -128,6 +128,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.train is None:
             self.train = Train(self.current_project)
             self.ui.main_tab.addTab(self.train, "Train")
+            self.train.train_performed.connect(self.on_project_updated)
     
     def open_test_tab(self):
         if self.test is None:

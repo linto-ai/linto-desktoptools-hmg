@@ -68,16 +68,20 @@ class Export(QtWidgets.QWidget):
         if file_path is None or len(file_path) == 0:
             return
         man = dict()
+
+        man['model_name'] = self.project.project_info['model_name']
         man['input_shape'] = self.project.model_info['input_shape']
         man['n_hotword'] = len(self.project.project_info['hotwords'])
-        man['wakeword_index'] = 0
-        man['inference_step'] = 1
-        man['features'] = dict()
-        man['features']['features'] = self.project.features_info['features_param']
-        man['features']['sample_rate'] = self.project.features_info['sample_rate']
-        man['features']['window_d'] = self.project.features_info['window_t']
-        man['features']['stride_d'] = self.project.features_info['hop_t']
-        man['features']['emphasis'] = self.project.features_info['emphasis']
+        
+        man['audio'] = dict()
+        man['audio']['sample_rate'] = self.project.features_info['sample_rate']
+        man['audio']['window_d'] = self.project.features_info['window_t']
+        man['audio']['stride_d'] = self.project.features_info['hop_t']
+        man['audio']['emphasis'] = self.project.features_info['emphasis']
+
+        man['features'] = self.project.features_info['features_param']
+        
+        
 
         with open(file_path, 'w') as f:
             json.dump(man, f)
