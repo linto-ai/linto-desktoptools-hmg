@@ -23,7 +23,7 @@ There are 2 options to use this software:
 **Release version: Unavailable** 
 
 Binary have been generated using PyInstaller on Ubuntu 18.04.
-You can download the lastest release [there]() (Due to the [change of tensorflow version](https://github.com/pyinstaller/pyinstaller/issues/4400), release is unavailable).
+You can download the lastest release [there](https://github.com/linto-ai/hmg/releases/download/0.3/hmg-v0.3-ubuntu.tar.gz).
 
 1. Extract the archive
 ```bash
