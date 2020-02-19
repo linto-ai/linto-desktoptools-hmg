@@ -38,12 +38,9 @@ class Export(QtWidgets.QWidget):
         QtWidgets.QMessageBox.information(self, "Model exported", "Saved model exported at {}".format(export_folder))
 
     def export_TensorflowLite(self):
-        # https://www.tensorflow.org/lite/guide/ops_select
-        converter = tf.lite.TFLiteConverter.from_keras_model_file(self.project.model_path)
-        converter.allow_custom_ops = True
-        converter.target_ops = []
-        if self.ui.TFLITE_BI_CB.isChecked() : converter.target_ops.append(tf.lite.OpsSet.TFLITE_BUILTINS)
-        if self.ui.TFLITE_BI_CB.isChecked() : converter.target_ops.append(tf.lite.OpsSet.SELECT_TF_OPS)
+        model = load_model(self.project.model_path)
+        converter = tf.lite.TFLiteConverter.from_keras_model(model)
+        
         try:
             tflite_model = converter.convert()
         except Exception as e:

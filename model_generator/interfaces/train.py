@@ -52,6 +52,7 @@ class Train(QtWidgets.QWidget):
         self.ui.stop_button.clicked.connect(self.on_stop_clicked)
         self.ui.delete_PB.clicked.connect(self.on_delete_clicked)
         self.ui.acc_stop_CB.stateChanged.connect(self.ui.acc_stop_value_SB.setEnabled)
+        self.ui.dropout_CB.stateChanged.connect(self.ui.dropout.setEnabled)
 
     def data_set_updated(self):
         """ Called when dataset has been modified from an other tab"""
@@ -272,7 +273,8 @@ class Train(QtWidgets.QWidget):
                                      output_size=self.output_size, 
                                      loss_fun=self.loss_bias, 
                                      #metrics=[], 
-                                     noise_layer_derivation=self.gaussian_noise_stdder)
+                                     noise_layer_derivation=self.gaussian_noise_stdder, 
+                                     unroll=self.ui.unroll_CB.isChecked())
 
         self.callbacks = callbacks(os.path.join(self.project.project_location, self.project.project_info['model_name']), self.only_keep_best)
 
@@ -281,7 +283,7 @@ class Train(QtWidgets.QWidget):
         print(self.model.summary())  
 
         # Check and vectorize samples
-        if not self.vectorized and not self.ui.pos_only_CB.isChecked():
+        if not self.vectorized or self.ui.pos_only_CB.isChecked():
             self.validation_set, self.validation_set_output = [], []
             error_files = []
             hotwords = self.project.project_info['hotwords']
@@ -422,7 +424,7 @@ class Train(QtWidgets.QWidget):
     
     @dropout.setter
     def dropout(self, value):
-        self.ui.dropout.setValue(value)
+        self.ui.dropout.setValue(value) if self.ui.dropout_CB.isChecked() else 0
 
     @property
     def n_denses(self) -> int:
@@ -434,7 +436,7 @@ class Train(QtWidgets.QWidget):
 
     @property
     def dense_sizes(self) -> list:
-        return [int(v) for v in self.ui.dense_size.text().strip().split(",")]
+        return [int(v) for v in self.ui.dense_size.text().strip().split(",")] if self.n_denses > 0 else []
     
     @dense_sizes.setter
     def dense_sizes(self, values:list):

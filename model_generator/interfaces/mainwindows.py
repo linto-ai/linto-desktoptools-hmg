@@ -106,8 +106,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def on_model_deleted(self):
         for tab in [self.test, self.infere, self.export]:
             if tab is not None:
-                tab.deleteLater()
-                tab = None
+                tab.deleteLater() 
+        self.test = None
+        self.infere = None
+        self.export = None
 
     def open_prepare_tab(self):
         if self.prepare is None:
@@ -129,6 +131,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.train = Train(self.current_project)
             self.ui.main_tab.addTab(self.train, "Train")
             self.train.train_performed.connect(self.on_project_updated)
+            self.train.model_deleted.connect(self.on_model_deleted)
     
     def open_test_tab(self):
         if self.test is None:

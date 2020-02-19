@@ -64,19 +64,23 @@ def create_model(model_path,
                  loss_fun: int =1, 
                  loss_bias=0.9, 
                  metrics=['accuracy'], 
-                 noise_layer_derivation = None):
+                 noise_layer_derivation = None,
+                 unroll: bool = False):
     from tensorflow import keras
 
     model = keras.models.Sequential()
 
-    if noise_layer_derivation is not None:
-        model.add(keras.layers.GaussianNoise(noise_layer_derivation))
-
     model.add(keras.layers.GRU(input_shape[0],
                            activation='linear',
                            input_shape=input_shape,
-                           name='GRU_layer'))
-    model.add(keras.layers.Dropout(dropout))
+                           name='GRU_layer',
+                           unroll=unroll))
+    
+    if noise_layer_derivation is not None:
+        model.add(keras.layers.GaussianNoise(noise_layer_derivation))
+
+    if dropout > 0:
+        model.add(keras.layers.Dropout(dropout))
         
     if n_denses > 0:
         for i, size in enumerate(dense_sizes):
