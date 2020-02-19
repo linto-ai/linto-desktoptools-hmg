@@ -62,7 +62,7 @@ python $(REPO_ROOT)/model_generator/main.py
 ```
 __________________
 ## Usage
-See the [wiki]()
+See the [wiki](https://github.com/linto-ai/linto-desktoptools-hmg/wiki)
 __________________
 ## Built using
 
