@@ -3,6 +3,8 @@
 # Hotword Model Generator
 HMG is a GUI tool designed to generate keyword spotting models.
 
+**DISCLAIMER: This is an rough version of a tool that haven't beed thoroughly tested, bug may (and probably will) occur. Please use the issue tracker to report them.**
+
 ## Introduction
 HMG allows you to:
 * Manage data

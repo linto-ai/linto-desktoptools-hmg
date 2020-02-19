@@ -86,22 +86,22 @@ class Manage(QtWidgets.QWidget):
         class_count = [0 for _ in classes]
 
         for s, set_name in zip([self.train_set, self.val_set, self.test_set], ['Train', 'Validation', 'Test']):
-            self.ui.resume_TE.appendPlainText('{} set : {} samples ({:.2f}%)\n'.format(set_name, len(s), len(s)/ total_c *100))
+            self.ui.resume_TE.appendPlainText('{} set : {} samples ({:.2f}%)\n'.format(set_name, len(s), (len(s)/ total_c *100) if total_c > 0 else 0.0))
             for i, cl in enumerate(classes):
                 count = len(s.get_subset_by_label(cl))
                 if cl is None :
                     cl = 'non-hotword'
                 class_count[i] += count
-                self.ui.resume_TE.appendPlainText('\t- {} : {} ({:.2f}%)\n'.format(cl, count, count/len(s) * 100))
+                self.ui.resume_TE.appendPlainText('\t- {} : {} ({:.2f}%)\n'.format(cl, count, (count/len(s) * 100) if len(s) > 0 else 0))
 
         self.ui.resume_TE.appendPlainText('Total sample:\n'.format())
         for i, cl in enumerate(classes):
             class_name = classes[i]
             if class_name is None :
                 class_name = 'non-hotword'
-            self.ui.resume_TE.appendPlainText('\t- {} : {}({:.2f}%)'.format(class_name, class_count[i], class_count[i] / total_c * 100))
+            self.ui.resume_TE.appendPlainText('\t- {} : {}({:.2f}%)'.format(class_name, class_count[i], (class_count[i] / total_c * 100) if total_c > 0 else 0))
             self.pieSlices[i].setValue(class_count[i])
-            self.pieSlices[i].setLabel('{} : {}({:.2f}%)'.format(class_name, class_count[i], class_count[i] / total_c * 100))
+            self.pieSlices[i].setLabel('{} : {}({:.2f}%)'.format(class_name, class_count[i], (class_count[i] / total_c * 100) if total_c > 0 else 0))
 
     def verify(self):
         missing_files = []
