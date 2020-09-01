@@ -3,7 +3,7 @@ import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from interfaces.mainwindows import MainWindow
+from interfaces.mainwindows_new import MainWindow
 
 
 def main():

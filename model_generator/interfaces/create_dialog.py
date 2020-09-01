@@ -11,7 +11,10 @@ else:
     DIR_PATH = os.path.dirname(__file__)
 
 class CreateDialog(QtWidgets.QDialog):
-    on_create = QtCore.pyqtSignal(str, str, str, list, name='on_create_clicked')
+    """
+    Dialog window to create a new project.
+    """
+    on_create = QtCore.pyqtSignal(str, str, list, name='on_create_clicked')
     def __init__(self, parent, project_name: str, project_path):
         super().__init__(parent)
         self.ui = Ui_Dialog()
@@ -19,7 +22,6 @@ class CreateDialog(QtWidgets.QDialog):
 
         if project_name != '':
             self.ui.name_LE.setText(project_name)
-            self.ui.model_name_LE.setText(project_name)
         
         if project_path != '':
             self.ui.location_LE.setText(project_path)
@@ -31,7 +33,6 @@ class CreateDialog(QtWidgets.QDialog):
         self.ui.create_PB.clicked.connect(self.on_create_clicked)
         self.ui.cancel_PB.clicked.connect(self.close)
         self.ui.locationChange_PB.clicked.connect(self.on_change_clicked)
-        self.ui.name_LE.textEdited.connect(self.ui.model_name_LE.setText)
     
     def on_change_clicked(self):
         res = QtWidgets.QFileDialog.getExistingDirectory(self, "Select a directory", "/home/")
@@ -62,11 +63,6 @@ class CreateDialog(QtWidgets.QDialog):
             warning_box.setText("A project needs a name")
             warning_box.exec()
             return
-        
-        if self.ui.model_name_LE.text().strip() == '':
-            warning_box.setText("A model needs a name")
-            warning_box.exec()
-            return
 
         if not os.path.isdir(os.path.dirname(self.ui.location_LE.text())):
             warning_box.setText("Could not find folder {}".format(self.ui.location_LE.text()))
@@ -78,7 +74,7 @@ class CreateDialog(QtWidgets.QDialog):
             item = self.ui.hotwords_Widget.item(i)
             hw_list.append(self.ui.hotwords_Widget.itemWidget(item).name)
         print(hw_list)
-        self.on_create.emit(self.ui.name_LE.text(), self.ui.location_LE.text(),  self.ui.model_name_LE.text(), hw_list)
+        self.on_create.emit(self.ui.name_LE.text(), self.ui.location_LE.text(), hw_list)
         self.close()
         
 class Activation_Sample(QtWidgets.QWidget):
@@ -111,6 +107,7 @@ class Activation_Sample(QtWidgets.QWidget):
     @property
     def name(self) -> str:
         return self._name
+
     @name.setter
     def name(self, name: str):
         self._name = name.strip().replace(' ', '_').lower()

@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'qt/ui/create_dialog.ui'
+# Form implementation generated from reading ui file 'create_dialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -57,25 +59,6 @@ class Ui_Dialog(object):
         self.hotwords_Widget.setObjectName("hotwords_Widget")
         self.horizontalLayout_5.addWidget(self.hotwords_Widget)
         self.verticalLayout_4.addWidget(self.groupBox_2)
-        self.groupBox_3 = QtWidgets.QGroupBox(Dialog)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.groupBox_3.sizePolicy().hasHeightForWidth())
-        self.groupBox_3.setSizePolicy(sizePolicy)
-        self.groupBox_3.setObjectName("groupBox_3")
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.groupBox_3)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.label_3 = QtWidgets.QLabel(self.groupBox_3)
-        self.label_3.setObjectName("label_3")
-        self.horizontalLayout_3.addWidget(self.label_3)
-        self.model_name_LE = QtWidgets.QLineEdit(self.groupBox_3)
-        self.model_name_LE.setObjectName("model_name_LE")
-        self.horizontalLayout_3.addWidget(self.model_name_LE)
-        self.verticalLayout_2.addLayout(self.horizontalLayout_3)
-        self.verticalLayout_4.addWidget(self.groupBox_3)
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
@@ -102,8 +85,5 @@ class Ui_Dialog(object):
         self.locationChange_PB.setText(_translate("Dialog", "Change"))
         self.groupBox_2.setTitle(_translate("Dialog", "Keywords"))
         self.add_Button.setText(_translate("Dialog", "Add"))
-        self.groupBox_3.setTitle(_translate("Dialog", "Model"))
-        self.label_3.setText(_translate("Dialog", "Model Name"))
         self.cancel_PB.setText(_translate("Dialog", "Cancel"))
         self.create_PB.setText(_translate("Dialog", "Create"))
-

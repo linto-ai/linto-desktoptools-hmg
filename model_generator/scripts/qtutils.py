@@ -1,4 +1,4 @@
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets, QtCore
 
 def create_infoline_layout(name, value):
     font = QtGui.QFont()
@@ -55,3 +55,38 @@ def empty_list_widget(listwidget, condition: callable = lambda x : True):
     delete_list.reverse()
     for i in delete_list:
         listwidget.takeItem(i)
+
+class CustomButton(QtWidgets.QFrame):
+    clicked = QtCore.pyqtSignal(name='clicked')
+    
+    def __init__(self, title: str, infoText: str, iconPath: str = None):
+        self.mainLayout = QtWidgets.QVBoxLayout()
+        self.titleLayout = QtWidgets.QHBoxLayout()
+        self.titleLayout.setSpacing(15)
+        QtWidgets.QFrame.__init__(self)
+        self.title = QtWidgets.QLabel(title)
+        self.title.setStyleSheet("font-weight: bold;")
+        self.title.setWordWrap(True)
+        if iconPath is not None:
+            icon = QtWidgets.QLabel()
+            iconMap = QtGui.QPixmap(iconPath)
+            icon.setPixmap(iconMap)
+            icon.setFixedSize(50,50)
+            icon.setScaledContents(True)
+            self.titleLayout.addWidget(icon)
+        self.titleLayout.addWidget(self.title)
+        self.description = QtWidgets.QLabel(infoText)
+        self.description.setWordWrap(True)
+
+        self.mainLayout.addLayout(self.titleLayout)
+        self.mainLayout.addWidget(self.description)
+        self.setLayout(self.mainLayout)
+
+        self.setFrameStyle(QtWidgets.QFrame.Box | QtWidgets.QFrame.Raised)
+        self.setMaximumSize(300,200)
+        self.setMinimumSize(300,100)
+
+    def mouseReleaseEvent(self, event):
+        if self.isEnabled:
+            self.clicked.emit()
+        
