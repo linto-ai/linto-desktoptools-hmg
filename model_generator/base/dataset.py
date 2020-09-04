@@ -168,3 +168,12 @@ class DataSet:
     def __iter__(self):
         yield from self.samples
 
+
+class Sample:
+    def __init__(self):
+        self.originalFile = "" # original File URI
+        self.label = "" #sample label
+        self.attr = "" # sample attribute
+        self.procFile = "" # processed file URI
+        self.featureFile = " " # feature file URI
+

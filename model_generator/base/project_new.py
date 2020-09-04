@@ -3,6 +3,7 @@ import json
 import datetime
 
 from PyQt5 import QtCore
+from base.dataset_new import DataSet
 
 class Project(QtCore.QObject):
     version = 1.0
@@ -15,6 +16,39 @@ class Project(QtCore.QObject):
         self.project_file = ""
         self.isOpen = False
     
+
+    ########################################################################
+    ##### DATASET
+    ########################################################################
+    
+    def addNewDataSet(self, name):
+        self.data["datasets"].append({"name" : name})
+        dataSetPath = os.path.join(self.project_location, "data", name)
+        os.mkdir(dataSetPath)
+        os.mkdir(os.path.join(dataSetPath, "samples"))
+        os.mkdir(os.path.join(dataSetPath, "features"))
+        dataset = DataSet(name, self.data["keywords"])
+        dataset.saveDataSet(os.path.join(dataSetPath, name + ".json"))
+        self._write()
+
+    def getDatasetNames(self) -> list:
+        return [ds["name"] for ds in self.data["datasets"]]
+
+    def getDatasetByName(self, name) -> DataSet:
+        if name not in self.getDatasetNames():
+            return None
+        dataset = DataSet()
+        dataSetPath = os.path.join(self.project_location, "data", name, name+".json")
+        dataset.loadDataSet(dataSetPath)
+        return dataset
+
+    def addExistingDataSet(self, datasetPath):
+        pass
+
+    ########################################################################
+    ##### PROJECT
+    ########################################################################
+
     def open_project(self, project_file):
         """
         Open a project, raise Exception if cannot read project file.
