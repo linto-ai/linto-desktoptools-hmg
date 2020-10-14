@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore, QtChart, QtGui
 
 from base.dataset_new import DataSet
 from interfaces.module import _Module
@@ -11,7 +11,7 @@ class Data(_Module):
     iconName = "data.png"
     shortDescription = ''' Manage your project data '''
     category = "prep"
-    moduleHelp = ''' 
+    moduleHelp = '''
                  The data module allow you to add audio samples to your project.
                  '''
 
@@ -24,41 +24,28 @@ class Data(_Module):
         self.currentDataset = DataSet()
         if(self.project.data["datasets"]):
             self.currentDataset = self.project.getDatasetByName(self.project.data["datasets"][0]["name"])
-
+        
         self.populateDatasetCB()
-        self.updateDisplay()
-        # CONNECT
-        self.ui.setAudio_PB.clicked.connect(self.onSetAudioClicked)
-        self.ui.createDataSet_PB.clicked.connect(self.onCreateDatasetClicked)
-        self.ui.currentDataSet_CB.currentIndexChanged.connect(self.onDataSetChanged)
-        self.ui.addFromFolder_PB.clicked.connect(self.addFromFolder)
 
-    def loadDataInfo(self):
-        if self.project["audio"]["set"]:
-            self.ui.audio_GB.setEnabled(False)
-            self.ui.overView_GB.setEnabled(True)
-            self.ui.add_GB.setEnabled(True)
+        #Chart
+        self.chart = DataChart(self.currentDataset.datasetValues())
+        self.ui.graphPlaceHolder.setLayout(QtWidgets.QHBoxLayout())
+        self.ui.graphPlaceHolder.layout().addWidget(self.chart)
+
+        self.updateDisplay()
+        
+        # CONNECT
+        self.ui.createDataSet_PB.clicked.connect(self.onCreateDatasetClicked)
+        self.ui.currentDataSet_CB.currentTextChanged.connect(self.onDataSetChanged)
+        self.ui.addFromFolder_PB.clicked.connect(self.addFromFolder)
+        self.currentDataset.dataset_updated.connect(self.updateDisplay)
 
     def updateDisplay(self):
-        self.ui.sampleRate_SP.setValue(self.project.audio["sampling_rate"])
-        self.ui.audio_GB.setEnabled(not self.project.audio["set"])
         self.ui.overView_GB.setEnabled(len(self.project.data["datasets"]) > 0)
         self.ui.add_GB.setEnabled(len(self.project.data["datasets"]) > 0)
         self.ui.overview_TE.clear()
         self.ui.overview_TE.appendPlainText(self.currentDataset.datasetInfo())
-        
-    def onSetAudioClicked(self):
-        ask_box = QtWidgets.QMessageBox(self)
-        ask_box.setIcon(QtWidgets.QMessageBox.Question)
-        ask_box.setText("Set sample rate to {} ? This cannot be changed later.".format(self.ui.sampleRate_SP.value()))
-        ask_box.setWindowTitle("Setting Sample Rate")
-        ask_box.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.Cancel)
-        res = ask_box.exec()
-        if res == QtWidgets.QMessageBox.Yes:
-            self.project.audio["sampleRate"] = self.ui.sampleRate_SP.value()
-            self.project.audio["set"] = True
-            self.project.update_project()
-            self.updateDisplay()
+        self.chart.updateChart(self.currentDataset.datasetValues())
 
     def onCreateDatasetClicked(self):
         dialog = CreateDatasetDialog(self, self.project.getDatasetNames())
@@ -75,17 +62,40 @@ class Data(_Module):
         for ds in self.project.data["datasets"]:
             self.ui.currentDataSet_CB.addItem(ds["name"], userData = ds["name"])
 
-    def onDataSetChanged(self, name):
+    def onDataSetChanged(self, name: str):
         self.currentDataset = self.project.getDatasetByName(name)
         self.updateDisplay()
         
-    
     def addFromFolder(self):
         dialog = AddFolderDialog(self, self.currentDataset)
+        dialog.addSamples.connect(self.onAddSample)
         dialog.show()
+        
+    def onAddSample(self, label: str, files: list):
+        self.currentDataset.addSampleFiles(label, files)
 
-    def onAddSample(self, label, files):
-        self.currentDataset
 
+class DataChart(QtChart.QChartView):
+    def __init__(self, data: list):
+        #data: list of tuple (label, value, percent)
+        QtChart.QChartView.__init__(self)
+        self.pie_slices = [QtChart.QPieSlice("{}- {} ({:.2}%)".format(*d), d[1]) for d in data]
 
-    
+        # Pie chart
+        self.pie_series = QtChart.QPieSeries()
+        for pie_slice in self.pie_slices:
+            self.pie_series.append(pie_slice)
+        self.pie_series.setHoleSize(0)
+
+        self.setRenderHint(QtGui.QPainter.Antialiasing)
+        self.chart().layout().setContentsMargins(0,0,0,0)
+        self.chart().setMargins(QtCore.QMargins(0,0,0,0))
+        self.chart().legend().setAlignment(QtCore.Qt.AlignRight)
+        self.chart().addSeries(self.pie_series)
+
+    def updateChart(self, data: list):
+        self.pie_series.clear()
+        if (sum([d[1] for d in data]) > 0):
+            self.pie_slices = [QtChart.QPieSlice("{}- {} ({:.2}%)".format(*d), d[1]) for d in data]
+            for pie_slice in self.pie_slices:
+                self.pie_series.append(pie_slice)

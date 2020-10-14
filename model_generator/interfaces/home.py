@@ -87,10 +87,10 @@ class Home(QtWidgets.QWidget):
         dialog.on_create.connect(self._on_project_created)
 
     def _on_project_created(self, name, path, hotwords):
-        self.project.create_project(name, path, hotwords)
+        project = self.project.create_project(name, path, hotwords)
         
         #Open newly created project
-        self.project_openned.emit()
+        self.project_openned.emit(project)
         
     def on_project_openned(self):
         self.update_user_prefs()

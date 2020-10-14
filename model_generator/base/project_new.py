@@ -108,7 +108,9 @@ class Project(QtCore.QObject):
             os.mkdir(os.path.join(project_location, subFolder))
 
         self.project_file = os.path.join(project_location, project_name + ".proj")
+        self.project_location = os.path.join(project_location)
         self._write()
+        return self
 
     def _write(self):
         self.project['last_used'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
