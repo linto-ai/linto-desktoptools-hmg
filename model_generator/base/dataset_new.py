@@ -12,6 +12,7 @@ class DataSet(QtCore.QObject):
     """
 
     dataset_updated = QtCore.pyqtSignal(name='dataset_updated')
+    progress_notification = QtCore.pyqtSignal(int, int, name='progress_notification') # show progress on long processing
 
     def __init__(self, dataSetName: str = "", labels: list = []):
         QtCore.QObject.__init__(self)
@@ -47,10 +48,13 @@ class DataSet(QtCore.QObject):
             self.samples.append(Sample({"label": label, "file": f}))
         self.saveDataSet()
         self.dataset_updated.emit()
+    
+    def addFromManifest(self, manifestRoot, manifest):
+        for s in manifest:
+            self.samples.append(Sample({"label": s["label"], "file" : os.path.join(manifestRoot, s["file"])}))
+        self.saveDataSet()
+        self.dataset_updated.emit()
 
-    def addFileFromManifest(self, manifestPath):
-        #TODO
-        pass
 
     ########################################################################
     ##### SET MANIPULATION
@@ -97,18 +101,36 @@ class DataSet(QtCore.QObject):
     ########################################################################
     ##### IMPORT / EXPORT
     ########################################################################
-    def exportDataSet(self, exportPath : str, exportedName: str, rawData : bool = True, procData : bool = True, compress : bool = False):
+    def exportDataSet(self, exportName : str, exportPath : str, trace : bool = False):
         """ Export this dataset to selected folder with data selected.
-        
-        Keyword arguments:
-        rawData -- export unprocessed data (default True)
-        procData -- export processed data (default True)
-        compress -- put the exported dataset in a compressed archive (default False)
         """
-        pass
+        targetFolder = os.path.join(exportPath, exportName)
+        if not os.path.isdir(targetFolder):
+            os.mkdir(targetFolder)
+        manifest = []
+        n_sample = len(self.samples)
+        counter = 0
+        for s in self.samples:
+            baseName = os.path.basename(s.file)
+            shutil.copy(s.file, os.path.join(targetFolder, baseName))
+            sample_desc = dict()
+            sample_desc['file'] = baseName
+            sample_desc['label'] = s.label
+            manifest.append(sample_desc)
+            counter += 1
+            if trace:
+                self.progress_notification.emit(counter, n_sample)
+
+        with open(os.path.join(targetFolder, "{}.json".format(exportName)), 'w') as f:
+            json.dump(manifest, f)
+
+        #TODO handle copy errors       
 
     def importDataSet(self, manifestPath):
-        pass
+        with open(manifestPath, 'r') as f:
+            manifest = json.load(f)
+        self.addFromManifest(os.path.dirname(manifestPath), manifest)
+
 
     ########################################################################
     ##### UTILS
@@ -126,10 +148,11 @@ class DataSet(QtCore.QObject):
             for d in [os.path.join(folderPath, d) for d in os.listdir(folderPath) if os.path.isdir(os.path.join(folderPath, d))]:
                 files += DataSet.listFolder(os.path.join(folderPath, d), recursive=recursive, ext=ext)
         return files
+
     
 class Sample:
     def __init__(self, sampleDict: dict = None):
-        self.fileURI = "" # File URI
+        self.file = "" # File URI
         self.label = "" # Sample label
         self.attr = "" # Sample attribute
         self.proc = None # Processing description (None if original)
@@ -143,7 +166,7 @@ class Sample:
     def sampleDesc(self) -> dict:
         return {
             "label" : self.label,
-            "file" : self.fileURI,
+            "file" : self.file,
             "attr" : self.attr,
             "proc" : self.proc,
             "originalFile" : self.originalFile,

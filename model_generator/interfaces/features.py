@@ -6,22 +6,30 @@ import json
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from base.dataset import DataSet
+from interfaces.module import _Module
+
+from base import DataSet, Project
 from interfaces.ui.features_ui import Ui_Features
 from interfaces.ui.features_chart_ui import Ui_Features_Charts
 from interfaces.ui.mfcc_ui import Ui_MFCC
 from scripts.qtutils import create_vertical_line, empty_layout
 
-class Features(QtWidgets.QWidget):
-
-    def __init__(self, project):
-        super().__init__()
+class Features(_Module):
+    moduleTitle= "Features"
+    iconName = "convert.png"
+    shortDescription = ''' Set features configuration '''
+    category = "prep"
+    moduleHelp = '''
+                 The feature module allow you to setup feature extraction parameters for your audio sample.
+                 '''
+    def __init__(self, project : Project):
+        _Module.__init__(self, project)
         self.ui = Ui_Features()
         self.ui.setupUi(self)
         self.project = project
 
         self.features_layout = QtWidgets.QHBoxLayout()
-
+        """
         self.current_feature = MFCC_Params()
         self.charts = FeaturesChart(self.project, self)
         self.ui.output_col_LCD.display(self.current_feature.output_size)
@@ -30,7 +38,7 @@ class Features(QtWidgets.QWidget):
         self.features_layout.addWidget(self.charts)
         self.ui.feature_Widget.setLayout(self.features_layout)
         self.ui.window_fun_CoB.setEnabled(self.current_feature.allow_window_fun)
-
+        
         #connect
         self.current_feature.output_size_changed.connect(self.ui.output_col_LCD.display)
         self.ui.preEmp_CB.toggled.connect(self.ui.preEmp_SB.setEnabled)
@@ -43,7 +51,7 @@ class Features(QtWidgets.QWidget):
 
         if self.project.features_info['set']:
             self.toggle_entries(False)
-
+    """
     def update_row_value(self, _):
         self.ui.output_row_LCD.display(self.row_size)
 

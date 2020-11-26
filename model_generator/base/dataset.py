@@ -1,6 +1,7 @@
 
 import os
 import json
+import shutil
 from random import shuffle
 
 class DataSet:
@@ -159,6 +160,12 @@ class DataSet:
                 self.samples.remove(sample)
         return self
 
+    def export(self, target_folder : str):
+        if not os.path.isdir(target_folder):
+            os.mkdir(target_folder)
+        for s in self.samples:
+            baseName = os.path.basename(s.originalFile)
+    
     def __len__(self):
         return len(self.samples)
     

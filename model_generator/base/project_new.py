@@ -1,6 +1,7 @@
 import os
 import json
 import datetime
+import shutil
 
 from PyQt5 import QtCore
 from base.dataset_new import DataSet
@@ -25,11 +26,24 @@ class Project(QtCore.QObject):
         self.data["datasets"].append({"name" : name})
         dataSetPath = os.path.join(self.project_location, "data", name)
         os.mkdir(dataSetPath)
-        os.mkdir(os.path.join(dataSetPath, "samples"))
         os.mkdir(os.path.join(dataSetPath, "features"))
         dataset = DataSet(name, self.data["keywords"])
         dataset.saveDataSet(os.path.join(dataSetPath, name + ".json"))
         self._write()
+
+    def deleteDataSet(self, name):
+        dataSetPath = os.path.join(self.project_location, "data", name)
+        index = None
+        for i, ds in enumerate(self.data["datasets"]):
+            if ds['name'] == name:
+                index = i
+                break
+        if index is not None:
+            self.data["datasets"].pop(index)
+            shutil.rmtree(dataSetPath)
+            self._write()
+        else:
+            print("Warning: Could not delete dataset {}. Not found".format(name))
 
     def getDatasetNames(self) -> list:
         return [ds["name"] for ds in self.data["datasets"]]
