@@ -1,3 +1,5 @@
+# NEXT VERSION BRANCH (WIP) 
+
 ![version](https://img.shields.io/github/manifest-json/v/linto-ai/hmg)
 
 # Hotword Model Generator

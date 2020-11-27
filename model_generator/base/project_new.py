@@ -91,7 +91,7 @@ class Project(QtCore.QObject):
                 raise Exception("Project version is too old, please create a new project.")
         except Exception:
                 raise Exception("Project version is too old, please create a new project.")
-        for entry in ["project", "data", "audio", "models"]:
+        for entry in ["project", "data", "features", "models"]:
             if entry not in manifest.keys():
                 raise Exception("Missing {} key in manifest.".format(entry))
         # Check nested key ? Maybe later
@@ -106,11 +106,7 @@ class Project(QtCore.QObject):
         self.data["keywords"] = keywords
         self.data["datasets"] = []
 
-        self.audio = dict()
-        self.audio["sampling_rate"] = 16000
-        self.audio["encoding"] = 2
-        self.audio["set"] = False
-
+        self.features = []
         self.models = []
         
         self.project['last_used'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
@@ -118,7 +114,7 @@ class Project(QtCore.QObject):
         if not os.path.isdir(project_location):
             os.mkdir(project_location)
 
-        for subFolder in ["data", "models", "outputs"]:
+        for subFolder in ["data", "models","features", "outputs"]:
             os.mkdir(os.path.join(project_location, subFolder))
 
         self.project_file = os.path.join(project_location, project_name + ".proj")
@@ -131,7 +127,7 @@ class Project(QtCore.QObject):
         manifest = {
             "project" : self.project,
             "data" : self.data,
-            "audio" : self.audio,
+            "features" : self.features,
             "models" : self.models
         }
         with open(self.project_file, 'w') as f:

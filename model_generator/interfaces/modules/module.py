@@ -3,7 +3,7 @@ import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtChart
 
-from base.project import Project
+from base import Project
 from scripts.qtutils import CustomButton
 
 if getattr(sys, 'frozen', False):
@@ -24,14 +24,13 @@ class _Module(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self)
         self.project = project
     
-    @classmethod
-    def button(cls) -> QtWidgets.QWidget:
-        return CustomButton(cls.moduleTitle, cls.shortDescription, os.path.join(DIR_PATH, "icons", cls.iconName))
+    def button(self) -> QtWidgets.QWidget:
+        return CustomButton(self, self.moduleTitle, self.shortDescription, os.path.join(os.path.dirname(DIR_PATH), "icons", self.iconName))
 
     @classmethod
     def icon(cls) -> QtWidgets:
         pushButton = QtWidgets.QPushButton()
-        iconMap = QtGui.QPixmap(os.path.join(DIR_PATH, "icons", cls.iconName))
+        iconMap = QtGui.QPixmap(os.path.join(os.path.dirname(DIR_PATH), "icons", cls.iconName))
         pushButton.setIcon(QtGui.QIcon(iconMap))
         pushButton.setIconSize(QtCore.QSize(50,50))
         pushButton.setToolTip(cls.shortDescription)

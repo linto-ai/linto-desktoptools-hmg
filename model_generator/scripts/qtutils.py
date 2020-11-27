@@ -57,9 +57,10 @@ def empty_list_widget(listwidget, condition: callable = lambda x : True):
         listwidget.takeItem(i)
 
 class CustomButton(QtWidgets.QFrame):
-    clicked = QtCore.pyqtSignal(name='clicked')
+    clicked = QtCore.pyqtSignal(QtWidgets.QWidget, name='clicked')
     
-    def __init__(self, title: str, infoText: str, iconPath: str = None):
+    def __init__(self, instance: QtWidgets.QWidget, title: str, infoText: str, iconPath: str = None):
+        self.instance = instance
         self.mainLayout = QtWidgets.QVBoxLayout()
         self.titleLayout = QtWidgets.QHBoxLayout()
         self.titleLayout.setSpacing(15)
@@ -88,5 +89,5 @@ class CustomButton(QtWidgets.QFrame):
 
     def mouseReleaseEvent(self, event):
         if self.isEnabled:
-            self.clicked.emit()
+            self.clicked.emit(self.instance)
         

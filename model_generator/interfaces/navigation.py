@@ -2,11 +2,10 @@ import os
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets, QtChart
 
-from interfaces.module import _Module
-
 from interfaces.ui.navigation_ui import Ui_Form
-from interfaces.data import Data
-from interfaces.features import Features
+
+from interfaces.modules import _Module
+from interfaces.modules import Data, Features
 
 from scripts.qtutils import CustomButton
 
@@ -23,9 +22,9 @@ class Navigation(QtWidgets.QWidget):
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.project = project
-        self.populate_final()
+        self.populate()
 
-    def populate_final(self):
+    def populate(self):
         for category in [self.ui.preparationWidget, self.ui.processingWidget, self.ui.processingWidget]:
             category.setLayout(QtWidgets.QHBoxLayout())
             category.layout().addItem(QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum))
@@ -40,7 +39,7 @@ class Navigation(QtWidgets.QWidget):
                 continue
             instance = module(self.project)
             button = instance.button()
-            button.clicked.connect(lambda: self.clicked.emit(instance))
+            button.clicked.connect(self.clicked.emit)
             targetWidget.layout().insertWidget(targetWidget.layout().count() -1 , button) # Insert the widget before the HSpacer
             
 

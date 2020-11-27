@@ -4,8 +4,8 @@ import json
 from PyQt5 import QtWidgets, QtCore, QtChart, QtGui
 
 from base import DataSet, Project
-from interfaces.module import _Module
-from interfaces.ui.data_ui import Ui_Form
+from .module import _Module
+from interfaces.modules.ui.data_ui import Ui_Form
 from interfaces.dialogs.createdataset import CreateDatasetDialog
 from interfaces.dialogs.deletedataset import DeleteDatasetDialog
 from interfaces.dialogs.addFromFolder import AddFolderDialog
