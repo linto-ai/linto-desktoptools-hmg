@@ -50,7 +50,7 @@ class Ui_Features(object):
         self.label_15.setObjectName("label_15")
         self.horizontalLayout_16.addWidget(self.label_15)
         self.sample_rate = QtWidgets.QSpinBox(self.audio_parameters)
-        self.sample_rate.setEnabled(False)
+        self.sample_rate.setEnabled(True)
         self.sample_rate.setMinimum(1)
         self.sample_rate.setMaximum(88000)
         self.sample_rate.setProperty("value", 16000)

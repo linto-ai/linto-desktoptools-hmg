@@ -1,5 +1,6 @@
 from .addFromFolder import AddFolderDialog
-from .createdataset import CreateDatasetDialog
+from .createdialog import CreateDialog
 from .deletedataset import DeleteDatasetDialog
 from .exportdataset import ExportDatasetDialog
 from .simpleDialog import SimpleDialog
+from .createfeature import CreateFeature

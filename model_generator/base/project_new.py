@@ -4,7 +4,8 @@ import datetime
 import shutil
 
 from PyQt5 import QtCore
-from base.dataset_new import DataSet
+from base import DataSet
+from base.features_param import _Feature, getFeaturesByType
 
 class Project(QtCore.QObject):
     version = 1.0
@@ -59,6 +60,27 @@ class Project(QtCore.QObject):
     def addExistingDataSet(self, datasetPath):
         pass
 
+    ########################################################################
+    ##### FEATURES
+    ########################################################################
+
+    def addFeatures(self, features: _Feature):
+        self.features.append(features.name)
+        featureFile = os.path.join(self.project_location, "features", name)
+        with open(os.path.join(self.project_location, "features", features.name), 'w') as f:
+            json.dump(features.generateManifest(), f)
+        features.featureFile = featureFile
+        self._write()
+
+    def getFeatures(self, name) -> _Feature:
+        featureFile = os.path.join(self.project_location, "features", name)
+        with open(featureFile, 'r') as f:
+            manifest = json.load(f)
+        features = getFeaturesByType(manifest["feature_type"], manifest["name"])
+        features.loadValues(manifest)
+        features.featureFile = featureFile
+        return features
+        
     ########################################################################
     ##### PROJECT
     ########################################################################

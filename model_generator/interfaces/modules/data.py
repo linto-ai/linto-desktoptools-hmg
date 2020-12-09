@@ -6,7 +6,7 @@ from PyQt5 import QtWidgets, QtCore, QtChart, QtGui
 from base import DataSet, Project
 from .module import _Module
 from interfaces.modules.ui.data_ui import Ui_Form
-from interfaces.dialogs.createdataset import CreateDatasetDialog
+from interfaces.dialogs.createdialog import CreateDialog
 from interfaces.dialogs.deletedataset import DeleteDatasetDialog
 from interfaces.dialogs.addFromFolder import AddFolderDialog
 from interfaces.dialogs.exportdataset import ExportDatasetDialog
@@ -59,7 +59,7 @@ class Data(_Module):
         self.chart.updateChart(self.currentDataset.datasetValues())
 
     def onCreateDatasetClicked(self):
-        dialog = CreateDatasetDialog(self, self.project.getDatasetNames())
+        dialog = CreateDialog(self, self.project.getDatasetNames(), "Create Dataset", "Dataset name:")
         dialog.on_create.connect(self.createNewDataSet)
         dialog.show()
 

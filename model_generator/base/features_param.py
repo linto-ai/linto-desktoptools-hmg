@@ -12,8 +12,9 @@ class _Feature:
 
     feature_type = None
 
-    def __init__(self, name, values : dict = None):
+    def __init__(self, name : str, featureFile: str, values : dict = None,):
         self.name = name
+        self.featureFile = featureFile
         if values is not None:
             self.loadValues(values)
 
@@ -24,6 +25,9 @@ class _Feature:
     
     def write(self, filePath):
         pass
+
+    def getParameters(self) -> dict:
+        return dict()
 
     def generateManifest(self):
         output = dict()
@@ -53,3 +57,27 @@ class MFCC_Features(_Feature):
             output["feature_params"][attr] = self.__getattribute__(attr)
 
         return output
+
+    def loadValues(self, values: dict):
+        acoustic = values["acoustic"] if "acoustic" in values.keys() else values
+        super().loadValues(acoustic)
+        feat_params = values["feature_params"] if "feature_params" in values.keys() else values
+        for key in feat_params:
+            if key in MFCC_Features.__dict__.keys():
+                self.__setattr__(key, feat_params[key])
+
+    def getParameters(self):
+        return {"fft_size" : self.fft_size,
+                "n_filters" : self.n_filters,
+                "n_coefs" : self.n_coefs,
+                "use_logenergy" : self.use_logenergy}
+
+    def write(self):
+        with open(self.featureFile, 'w') as f:
+            json.dump(self.generateManifest(), f)
+
+def getFeaturesByType(featType: str, name : str) -> _Feature:
+    if featType.lower() == "mfcc":
+        return MFCC_Features(name)
+    else:
+        return None
