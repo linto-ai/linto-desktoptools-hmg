@@ -10,7 +10,7 @@ from interfaces.modules import _Module
 from interfaces.ui.mainwindow_ui_new import Ui_MainWindow
 from interfaces.navigation import Navigation
 from interfaces.home import Home
-from scripts.qtutils import create_vertical_spacer, empty_layout
+from interfaces.utils.qtutils import create_vertical_spacer, empty_layout
 
 if getattr(sys, 'frozen', False):
     DIR_PATH = os.path.dirname(sys.executable)
@@ -29,6 +29,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.home.project_openned.connect(self.onProjectOpenned)
         self.ui.stackedWidget.addWidget(self.home)
         self.ui.stackedWidget.setCurrentWidget(self.home)
+        self.showMaximized()
     
     def displayStatus(self, message, timeout=0):
         self.ui.statusBar.showMessage(message, timeout)

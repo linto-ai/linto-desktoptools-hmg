@@ -8,7 +8,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from base.project_new import Project
 from interfaces.ui.home_ui import Ui_home
-from scripts.qtutils import create_infoline_layout, create_horizontal_line, empty_layout
+from interfaces.utils.qtutils import create_infoline_layout, create_horizontal_line, empty_layout
 from interfaces.create_dialog import CreateDialog
 
 if getattr(sys, 'frozen', False):
@@ -77,9 +77,8 @@ class Home(QtWidgets.QWidget):
             err_box.exec()
         else:
             self.project_openned.emit(self.project)
-
-        self.ui.open_project_string.setText(file_path)
-        self.is_openned = True
+            self.ui.open_project_string.setText(file_path)
+            self.is_openned = True
             
     def _on_create_project(self):
         dialog = CreateDialog(self, self.ui.new_project_name.text(), self.ui.new_project_location.text())

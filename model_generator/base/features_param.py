@@ -1,5 +1,7 @@
 import json
 
+from processing.mfcc import mfcc_feats
+
 class _Feature:
     sample_rate = 16000
     encoding = 2
@@ -38,6 +40,20 @@ class _Feature:
         output["feature_type"] = self.feature_type
         return output
 
+    def extract_function(self) -> callable:
+        return lambda x : None
+
+    @property
+    def sample_s(self):
+        return int(self.sample_length * self.sample_rate)
+
+    @property
+    def window_s(self):
+        return int(self.window_length * self.sample_rate)
+    
+    @property
+    def window_stride_s(self):
+        return int(self.window_stride * self.sample_rate)
 
 
 class MFCC_Features(_Feature):
@@ -76,7 +92,18 @@ class MFCC_Features(_Feature):
         with open(self.featureFile, 'w') as f:
             json.dump(self.generateManifest(), f)
 
-def getFeaturesByType(featType: str, name : str) -> _Feature:
+    def extract_function(self, sig) :
+        return mfcc_feats(sig,
+                    self.sample_rate, 
+                    self.window_s, 
+                    self.window_stride_s, 
+                    self.fft_size, 
+                    num_filter = self.n_filters, 
+                    num_coef = self.n_coefs, 
+                    hamming = self.window_fun == 'hamming',
+                    preEmp  = self.emphasis_factor)
+
+def getFeaturesByType(featType: str, name : str):
     if featType.lower() == "mfcc":
         return MFCC_Features(name)
     else:

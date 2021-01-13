@@ -9,7 +9,7 @@ class PredictFun(object):
 
     def _load_keras_model(self, model_path : str):
         self.model = load_model(model_path)
-        self.model._make_predict_function()
+        #self.model._make_predict_function()
         return self.model.predict
     
     def predict(self, inputs):

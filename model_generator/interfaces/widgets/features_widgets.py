@@ -12,16 +12,25 @@ class MFCC(QtWidgets.QWidget):
         self.load_values(default)
         
         self.ui.nfft_SP.valueChanged.connect(lambda: self.features_changed.emit())
-        self.ui.nfilt_SP.valueChanged.connect(lambda: self.features_changed.emit())
-        self.ui.ncoef_SP.valueChanged.connect(lambda: self.features_changed.emit())
+        self.ui.nfilt_SP.valueChanged.connect(self.onNumFiltChanged)
+        self.ui.ncoef_SP.valueChanged.connect(self.onNumCoefChanged)
         self.ui.use_energy_CB.stateChanged.connect(lambda: self.features_changed.emit())
-
 
     def load_values(self, values: dict):
         self.ui.nfft_SP.setValue(values.get("fft_size", 512))
         self.ui.nfilt_SP.setValue(values.get("n_filters", 20))
         self.ui.ncoef_SP.setValue(values.get("n_coefs", 13))
         self.ui.use_energy_CB.setChecked(values.get("use_logenergy", False))
+
+    def onNumCoefChanged(self, value):
+        if value >= self.ui.nfilt_SP.value():
+            self.ui.nfilt_SP.setValue(value + 1)
+        self.features_changed.emit()
+    
+    def onNumFiltChanged(self, value):
+        if value <= self.ui.ncoef_SP.value():
+            self.ui.ncoef_SP.setValue(value - 1)
+        self.features_changed.emit()
 
     def getValues(self) -> dict:
         values = dict()

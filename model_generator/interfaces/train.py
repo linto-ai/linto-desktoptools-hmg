@@ -323,20 +323,19 @@ class Train(QtWidgets.QWidget):
                                                                              self.project.features_info,
                                                                              labels=[s[1] for s in unproc_val],
                                                                              progress_callback=self.progress_display)
-            if not self.ui.pos_only_CB.isChecked():
-                self.vectorized = True        
+                 
         self.progress_display(0, 1, "Training ...")
         self.ui.stop_button.setEnabled(True)
         QtWidgets.QApplication.instance().processEvents()
         
         # Fits model and uses outputs to update chart
-        self.model.fit([self.train_set], 
-                       [self.train_set_output],
+        self.model.fit(self.train_set, 
+                       self.train_set_output,
                        batch_size=self.batch_size,
                        initial_epoch=self.current_epoch,
                        epochs=self.target_epoch,
                        callbacks=self.callbacks,
-                       validation_data=([self.validation_set],[self.validation_set_output]),
+                       validation_data=(self.validation_set,self.validation_set_output),
                        verbose=0,
                        shuffle=self.shuffle)
 

@@ -5,9 +5,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets, QtChart
 from interfaces.ui.navigation_ui import Ui_Form
 
 from interfaces.modules import _Module
-from interfaces.modules import Data, Features
+from interfaces.modules import Data, Features, Models
 
-from scripts.qtutils import CustomButton
+from interfaces.utils.qtutils import CustomButton
 
 if getattr(sys, 'frozen', False):
     DIR_PATH = os.path.dirname(sys.executable)
@@ -31,6 +31,7 @@ class Navigation(QtWidgets.QWidget):
         modules = [
             Data,
             Features,
+            Models
         ]
         for module in modules:
             targetWidget = {"prep" : self.ui.preparationWidget, "proc" : self.ui.processingWidget, "output" : self.ui.processingWidget}.get(module.category, "None")

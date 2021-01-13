@@ -13,6 +13,7 @@ from interfaces.modules.ui.features_ui import Ui_Features
 from interfaces.ui.features_chart_ui import Ui_Features_Charts
 from interfaces.ui.mfcc_ui import Ui_MFCC
 from interfaces.widgets.features_widgets import MFCC
+from interfaces.widgets.features_chart import Feature_Chart
 
 from interfaces.dialogs import CreateFeature
 
@@ -37,6 +38,8 @@ class Features(_Module):
         self.currentFeaturesWidget = None
         self.updateUI()
         self.setParameters()
+        self.initChartWidget()
+        self.populateDataSetCB()
 
         # CONNECT
         self.ui.create_PB.clicked.connect(self.onCreateClicked)
@@ -51,6 +54,9 @@ class Features(_Module):
         self.ui.window_t_SP.valueChanged.connect(self.onValueChanged)
         self.ui.stride_t_SB.valueChanged.connect(self.onValueChanged)
         self.ui.window_fun_CoB.currentIndexChanged.connect(self.onValueChanged)
+        self.ui.analyse_PB.clicked.connect(self.update_chart)
+
+        self.project.dataset_updated.connect(self.populateDataSetCB)
 
     def onValueChanged(self, _ = None):
         self.ui.save_PB.setEnabled(True)
@@ -74,6 +80,25 @@ class Features(_Module):
                 self.currentFeaturesWidget = MFCC(self.currentFeatures.getParameters())
                 self.currentFeaturesWidget.features_changed.connect(self.onValueChanged)
             self.featureLayout.insertWidget(0, self.currentFeaturesWidget)
+
+    def initChartWidget(self):
+        self.chartWidget = Feature_Chart(self.project)
+        self.ui.chart_Widget.layout().addWidget(self.chartWidget)
+
+    def populateDataSetCB(self):
+        self.ui.dataSet_CB.clear()
+        for dataset in self.project.getDatasetNames():
+            self.ui.dataSet_CB.addItem(dataset, userData=dataset)
+
+    def update_chart(self):
+        currentDisplayedFeat = getFeaturesByType(self.currentFeatures.feature_type, "temp")
+        currentDisplayedFeat.loadValues(self.paramToDict())
+        self.ui.analyse_PB.setEnabled(False)
+        self.chartWidget.createGraph(self.project.getDatasetByName(self.ui.dataSet_CB.currentText()),
+                                     currentDisplayedFeat, 
+                                     self.ui.variance_CB.isChecked())
+        self.ui.analyse_PB.setEnabled(False)
+        self.ui.analyse_PB.setEnabled(True)
 
     def populateCB(self):
         self.ui.featureProfiles_CB.clear()

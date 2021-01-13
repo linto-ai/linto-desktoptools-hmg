@@ -4,7 +4,7 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets, QtChart
 
 from base import Project
-from scripts.qtutils import CustomButton
+from interfaces.utils.qtutils import CustomButton
 
 if getattr(sys, 'frozen', False):
     DIR_PATH = os.path.dirname(sys.executable)
