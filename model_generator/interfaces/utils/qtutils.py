@@ -26,6 +26,9 @@ def create_vertical_line():
 def create_vertical_spacer():
     return QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
 
+def create_horizontal_spacer():
+    return QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+
 def empty_layout(layout):
     if layout is not None:
         for i in reversed(range(layout.count())): 

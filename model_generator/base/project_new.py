@@ -6,6 +6,7 @@ import shutil
 from PyQt5 import QtCore
 from base import DataSet
 from base.features_param import _Feature, getFeaturesByType
+from base.model import _Model, getModelbyType
 
 class Project(QtCore.QObject):
     version = 1.0
@@ -13,6 +14,8 @@ class Project(QtCore.QObject):
 
     project_updated = QtCore.pyqtSignal(name='project_updated')
     dataset_updated = QtCore.pyqtSignal(name='dataset_updated')
+    feature_updated = QtCore.pyqtSignal(name='feature_updated')
+    model_updated = QtCore.pyqtSignal(name='model_updated')
     def __init__(self):
         QtCore.QObject.__init__(self)
         self.project_location = ""
@@ -68,21 +71,65 @@ class Project(QtCore.QObject):
 
     def addFeatures(self, features: _Feature):
         self.features.append(features.name)
-        featureFile = os.path.join(self.project_location, "features", features.name)
-        with open(os.path.join(self.project_location, "features", features.name), 'w') as f:
+        featureFile = os.path.join(self.project_location, "features", features.name + ".json")
+        with open(featureFile, 'w') as f:
             json.dump(features.generateManifest(), f)
         features.featureFile = featureFile
         self._write()
+        self.feature_updated.emit()
 
-    def getFeatures(self, name) -> _Feature:
-        featureFile = os.path.join(self.project_location, "features", name)
+    def getFeatures(self, name: str) -> _Feature:
+        featureFile = os.path.join(self.project_location, "features", name + ".json")
         with open(featureFile, 'r') as f:
             manifest = json.load(f)
         features = getFeaturesByType(manifest["feature_type"], manifest["name"])
         features.loadValues(manifest)
         features.featureFile = featureFile
         return features
+
+    def deleteFeatures(self, name: str):
+        if name in self.features:
+            featureFile = os.path.join(self.project_location, "features", name +".json")
+            try:
+                os.remove(featureFile)
+            except Exception:
+                raise Exception("Could not remove feature profile")
+            else:
+                self.features.remove(name)
+                self.update_project()
+                self.feature_updated.emit()
         
+        
+    ########################################################################
+    ##### MODEL
+    ########################################################################
+    def addModel(self, model: _Model):
+        modelPath = os.path.join(self.project_location, "models", model.name +".json")
+        model.modelPath = modelPath
+        model.writeModel()
+        self.models.append(model.name)
+        self.update_project()
+        self.model_updated.emit()
+
+    def getModel(self, name: str) -> _Model:
+        modelPath = os.path.join(self.project_location, "models", name +".json")
+        try:
+            with open(modelPath, 'r') as f:
+                manifest = json.load(f)
+        except Exception as e:
+            raise e
+        model = getModelbyType(manifest["type"])()
+        model.loadModel(modelPath)
+        model.modelPath = modelPath
+        return model
+
+    def deleteModel(self, name: str):
+        modelPath = os.path.join(self.project_location, "models", name +".json")
+        self.models.remove(name)
+        os.remove(modelPath)
+        self.update_project()
+        self.model_updated.emit()
+
     ########################################################################
     ##### PROJECT
     ########################################################################

@@ -14,8 +14,10 @@ class Feature_Chart(QtWidgets.QWidget):
         self.layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.layout)
 
+    def clearChart(self):
+        empty_layout(self.layout)
+
     def createGraph(self, dataSet, feature_param : _Feature, display_variance):
-        
         empty_layout(self.layout)
         self.figure = Figure()
         self.figure.clear()

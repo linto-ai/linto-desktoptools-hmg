@@ -7,7 +7,7 @@ from base import DataSet, Project
 from .module import _Module
 from interfaces.modules.ui.data_ui import Ui_Form
 from interfaces.dialogs.createdialog import CreateDialog
-from interfaces.dialogs.deletedataset import DeleteDatasetDialog
+from interfaces.dialogs import ConfirmDelete
 from interfaces.dialogs.addFromFolder import AddFolderDialog
 from interfaces.dialogs.exportdataset import ExportDatasetDialog
 from interfaces.dialogs import SimpleDialog
@@ -64,7 +64,7 @@ class Data(_Module):
         dialog.show()
 
     def onDeleteDatasetClicked(self):
-        dialog = DeleteDatasetDialog(self, self.ui.currentDataSet_CB.currentText())
+        dialog = ConfirmDelete(self, "Delete Dataset", "Do you want to delete", self.ui.currentDataSet_CB.currentText())
         dialog.on_delete.connect(self.deleteDataset)
         dialog.show()
 

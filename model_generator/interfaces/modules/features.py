@@ -14,8 +14,9 @@ from interfaces.ui.features_chart_ui import Ui_Features_Charts
 from interfaces.ui.mfcc_ui import Ui_MFCC
 from interfaces.widgets.features_widgets import MFCC
 from interfaces.widgets.features_chart import Feature_Chart
+from interfaces.utils.qtutils import empty_layout
 
-from interfaces.dialogs import CreateFeature
+from interfaces.dialogs import CreateFeature, ConfirmDelete
 
 class Features(_Module):
     moduleTitle= "Features"
@@ -36,15 +37,18 @@ class Features(_Module):
         self.featureLayout = QtWidgets.QVBoxLayout()
         self.ui.feature_Widget.setLayout(self.featureLayout)
         self.currentFeaturesWidget = None
-        self.updateUI()
-        self.setParameters()
         self.initChartWidget()
+        self.populateCB()
+        self.updateUI()
         self.populateDataSetCB()
 
         # CONNECT
         self.ui.create_PB.clicked.connect(self.onCreateClicked)
+        self.ui.delete_PB.clicked.connect(self.onDeleteClicked)
         self.ui.save_PB.clicked.connect(self.onSaveClicked)
-        #self.ui.featureProfiles_CB.currentTextChanged
+        
+        # TODO: Changing current feature doesn't load feature profile
+        self.ui.featureProfiles_CB.currentTextChanged.connect(self.onProfileChanged)
 
         self.ui.sample_rate.valueChanged.connect(self.onValueChanged)
         self.ui.encoding.valueChanged.connect(self.onValueChanged)
@@ -57,25 +61,34 @@ class Features(_Module):
         self.ui.analyse_PB.clicked.connect(self.update_chart)
 
         self.project.dataset_updated.connect(self.populateDataSetCB)
+        self.project.feature_updated.connect(self.updateUI)
 
     def onValueChanged(self, _ = None):
+        ''' Enable save button when a value is changed '''
         self.ui.save_PB.setEnabled(True)
 
+    def onProfileChanged(self, name: str):
+        if name is not None and name != '':
+            self.currentFeatures = self.project.getFeatures(self.ui.featureProfiles_CB.currentText())
+            self.updateUI()
+
     def updateUI(self):
-        self.populateCB()
         self.setParameters()
         self.setFeatureWidget()
+        self.chartWidget.clearChart()
         feature_active = not len(self.project.features) == 0
         self.ui.audio_parameters.setEnabled(feature_active)
         self.ui.preprocess.setEnabled(feature_active)
         self.ui.windows.setEnabled(feature_active)
         self.ui.delete_PB.setEnabled(feature_active)
+        self.ui.analyse_PB.setEnabled(feature_active)
         self.ui.save_PB.setEnabled(False)
     
     def setFeatureWidget(self):
         if self.currentFeatures is not None:
             if self.currentFeaturesWidget is not None:
-                self.featureLayout.removeWidget(self.currentFeaturesWidget)
+                empty_layout(self.featureLayout)
+                self.currentFeaturesWidget.deleteLater()
             if self.currentFeatures.feature_type == "mfcc":
                 self.currentFeaturesWidget = MFCC(self.currentFeatures.getParameters())
                 self.currentFeaturesWidget.features_changed.connect(self.onValueChanged)
@@ -86,6 +99,7 @@ class Features(_Module):
         self.ui.chart_Widget.layout().addWidget(self.chartWidget)
 
     def populateDataSetCB(self):
+        self.chartWidget.clearChart()
         self.ui.dataSet_CB.clear()
         for dataset in self.project.getDatasetNames():
             self.ui.dataSet_CB.addItem(dataset, userData=dataset)
@@ -120,12 +134,27 @@ class Features(_Module):
         dialog = CreateFeature(self, self.project.features, ["mfcc"])
         dialog.on_create.connect(self.onFeatureCreated)
         dialog.show()
+
+    def onDeleteClicked(self):
+        dialog = ConfirmDelete(self, "Delete Feature Profile", "Do you want to delete", self.ui.featureProfiles_CB.currentText())
+        dialog.on_delete.connect(self.deleteProfile)
+        dialog.show()
+
+    def deleteProfile(self, name: str):
+        self.project.deleteFeatures(name)
+        self.populateCB()
+        self.currentFeatures = None
+        if len(self.project.features) == 0:
+            self.updateUI()
+        else:
+            self.ui.featureProfiles_CB.setCurrentIndex(self.ui.featureProfiles_CB.count() -1)
     
     def onFeatureCreated(self, name: str, featType: str):
         features = getFeaturesByType(featType, name)
         self.project.addFeatures(features)
         self.currentFeatures = features
-        self.updateUI()
+        self.populateCB()
+        self.ui.featureProfiles_CB.setCurrentIndex(self.ui.featureProfiles_CB.count() -1)
 
     def onSaveClicked(self):
         self.currentFeatures.loadValues(self.paramToDict())
