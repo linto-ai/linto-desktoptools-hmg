@@ -2,7 +2,7 @@ import os
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from base.dataset_new import DataSet
+from base import DataSet
 
 from .ui.exportdataset_ui import Ui_Dialog
 

@@ -29,7 +29,10 @@ class Models(_Module):
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.project = project
-
+        if len(self.project.models) > 0:
+            self.currentModel = self.project.getModel(self.project.models[-1])
+        else:
+            self.currentModel = None
         self.populateModelProfiles()
         self.loadLayerlist()
 
@@ -45,6 +48,8 @@ class Models(_Module):
         if name is not None and name != '':
             self.currentModel = self.project.getModel(name)
             self.loadLayerlist()
+        else:
+            self.ui.layerList_List.clear()
 
     def populateModelProfiles(self):
         self.ui.model_CB.clear()
@@ -56,12 +61,13 @@ class Models(_Module):
 
     def loadLayerlist(self):
         self.ui.layerList_List.clear()
-        for layer in self.currentModel.layers:
-            l_item = QtWidgets.QListWidgetItem()
-            l_widget = LayerWidget(layer, l_item)
-            l_item.setSizeHint(l_widget.sizeHint())
-            self.ui.layerList_List.addItem(l_item)
-            self.ui.layerList_List.setItemWidget(l_item, l_widget)
+        if self.currentModel is not None:
+            for layer in self.currentModel.layers:
+                l_item = QtWidgets.QListWidgetItem()
+                l_widget = LayerWidget(layer, l_item)
+                l_item.setSizeHint(l_widget.sizeHint())
+                self.ui.layerList_List.addItem(l_item)
+                self.ui.layerList_List.setItemWidget(l_item, l_widget)
 
     def onCreateClicked(self):
         dialog = CreateModel(self, self.project.models, ["gru"])
@@ -95,7 +101,6 @@ class Models(_Module):
         self.currentModel.writeModel()
             
 
-    
 class LayerWidget(QtWidgets.QWidget):
     def __init__(self, layer: _Layer, list_item: QtWidgets.QListWidgetItem):
         QtWidgets.QWidget.__init__(self)

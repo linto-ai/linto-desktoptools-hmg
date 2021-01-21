@@ -55,6 +55,10 @@ class _Feature:
     def window_stride_s(self):
         return int(self.window_stride * self.sample_rate)
 
+    @property
+    def feature_shape(self) -> tuple:
+        return (0,0)
+
 
 class MFCC_Features(_Feature):
     fft_size = 512
@@ -102,6 +106,11 @@ class MFCC_Features(_Feature):
                     num_coef = self.n_coefs, 
                     hamming = self.window_fun == 'hamming',
                     preEmp  = self.emphasis_factor)
+
+    @property
+    def feature_shape(self) -> tuple:
+        n_win = int(((self.sample_length - self.window_length) / self.window_stride) + 1)
+        return (n_win,self.n_coefs)
 
 def getFeaturesByType(featType: str, name : str):
     if featType.lower() == "mfcc":

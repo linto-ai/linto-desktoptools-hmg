@@ -5,7 +5,7 @@ import json
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from base.project_new import Project
+from base import Project
 from interfaces.modules import _Module
 from interfaces.ui.mainwindow_ui_new import Ui_MainWindow
 from interfaces.navigation import Navigation

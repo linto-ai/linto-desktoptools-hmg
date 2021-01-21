@@ -68,6 +68,7 @@ class CustomButton(QtWidgets.QFrame):
         self.titleLayout = QtWidgets.QHBoxLayout()
         self.titleLayout.setSpacing(15)
         QtWidgets.QFrame.__init__(self)
+        
         self.title = QtWidgets.QLabel(title)
         self.title.setStyleSheet("font-weight: bold;")
         self.title.setWordWrap(True)
@@ -87,8 +88,8 @@ class CustomButton(QtWidgets.QFrame):
         self.setLayout(self.mainLayout)
 
         self.setFrameStyle(QtWidgets.QFrame.Box | QtWidgets.QFrame.Raised)
-        self.setMaximumSize(300,200)
-        self.setMinimumSize(300,100)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
+        self.setFixedWidth(self.height())
 
     def mouseReleaseEvent(self, event):
         if self.isEnabled:

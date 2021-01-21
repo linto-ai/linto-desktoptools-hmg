@@ -1,186 +1,193 @@
 
 import os
 import json
-import shutil
 from random import shuffle
+import shutil
 
-class DataSet:
-    def __init__(self):
+from PyQt5 import QtCore
+
+class DataSet(QtCore.QObject):
+    """ DataSet represent a collection of audio samples.
+    The class provides methods to manage, select and export data.
+    """
+
+    dataset_updated = QtCore.pyqtSignal(name='dataset_updated')
+    progress_notification = QtCore.pyqtSignal(int, int, name='progress_notification') # show progress on long processing
+
+    def __init__(self, dataSetName: str = "", labels: list = []):
+        QtCore.QObject.__init__(self)
+        self.dataSetName = dataSetName
+        self.labels = labels
         self.samples = []
-    
-    def add_from_folder(self, folder_path: str, 
-                        label: str,
-                        attr_from_name_index: int = None,
-                        attr_from_name_separator: str = None,
-                        ext: str = None):
-        if ext is None:
-            files = os.listdir(folder_path)
-        else:
-            files = [f for f in os.listdir(folder_path) if f.endswith(ext)]
+        self.datasetFile = ""
+        self.prep = False
 
+    def saveDataSet(self, datasetPath: str = None):
+        datasetPath = datasetPath if datasetPath is not None else self.datasetFile
+        datasetContent = dict()
+        datasetContent["name"] = self.dataSetName
+        datasetContent["labels"] = self.labels
+        datasetContent["samples"] = [s.sampleDesc for s in self.samples]
+        with open(datasetPath, 'w') as f:
+            json.dump(datasetContent, f)
+
+    def loadDataSet(self, datasetPath: str):
+        self.datasetFile = datasetPath
+        with open(datasetPath, 'r') as f:
+            datasetContent = json.load(f)
+        self.dataSetName = datasetContent["name"]
+        self.labels = datasetContent["labels"]
+        self.samples = [Sample(s) for s in datasetContent["samples"]]
+
+    ########################################################################
+    ##### DATA MANAGEMENT
+    ########################################################################
+
+    def addSampleFiles(self, label, files):
         for f in files:
-            if attr_from_name_index is not None and attr_from_name_separator is not None:
-                try:
-                    attr = f.split('.')[0].split(attr_from_name_separator)[attr_from_name_index]
-                except Exception:
-                    attr = None
-            else: 
-                attr = None
-            self.samples.append({'file_path': os.path.join(folder_path, f),
-                                 'label':label,
-                                 'attr':attr})
-                 
-    def add_from_manifest(self, manifest_path: str, 
-                          file_key,
-                          label_key, 
-                          attr_key = None, 
-                          conditions: list = []):
-        def process_keys(root, keys):
-            res = root
-            if type(keys) is list:
-                for k in keys:
-                    res = res[k]
-                return res
-            else:
-                return root[keys]
+            self.samples.append(Sample({"label": label, "file": f}))
+        self.saveDataSet()
+        self.dataset_updated.emit()
+    
+    def addFromManifest(self, manifestRoot, manifest):
+        for s in manifest:
+            self.samples.append(Sample({"label": s["label"], "file" : os.path.join(manifestRoot, s["file"])}))
+        self.saveDataSet()
+        self.dataset_updated.emit()
+
+
+    ########################################################################
+    ##### SET MANIPULATION
+    ########################################################################
+
+    def getsubsetbyLabel(self, label) -> list:
+        label = label if label is not None else ""
+        return [s for s in self.samples if s.label == label]
+
+    def formSets(self, distribution: tuple) -> tuple:
+        '''  Divide the dataset into 3 sets (train, val, test) according to the [distribution] values'''
+        train_set = DataSet("train", self.labels)
+        val_set = DataSet("val", self.labels)
+        test_set = DataSet("test", self.labels)
+    
+        # Split the data by labels
+        for label in self.labels + [None]:
+            subset = self.getsubsetbyLabel(label)
+            delimiter_1 = int(distribution[0] * len(subset))
+            delimiter_2 = delimiter_1 + int(distribution[1] * len(subset))
+            train_set.samples.extend(subset[:delimiter_1])
+            val_set.samples.extend(subset[delimiter_1:delimiter_2])
+            test_set.samples.extend(subset[delimiter_2:])
+
+        return (train_set, val_set, test_set)
+        
+    ########################################################################
+    ##### DISPLAY
+    ########################################################################
+
+    def datasetInfo(self) -> str:
+        sep = "\n" + "-"*15 +"\n"
+        percent = lambda n, d : "{:.2f}%".format(n/d*100)
+        info = "Dataset Name : {}\n".format(self.dataSetName)
+        info += "Labels: {}\n".format(str(self.labels))
+        n_sample = len(self.samples)
+        if n_sample == 0:
+            info += "No sample yet.\n"
+            return info
+        info += "Number of samples: {}".format(n_sample)
+
+        for label in self.labels + [None]:
+            info += sep
+            n_sl = len(self.getsubsetbyLabel(label if label is not None else ""))
+            info += "Samples of {}:\n".format(label if label is not None else "non-hotword")
+            info += "\tSample count: {} ({})\n".format(n_sl, percent(n_sl, n_sample))
             
-        folder_path = os.path.dirname(manifest_path)
-        with open(manifest_path, 'r') as f:
-            manifest = json.load(f)
-        for sample in manifest:
-            attr = process_keys(sample, attr_key) if attr_key is not None else None
-            f = process_keys(sample, file_key)
-            label = process_keys(sample, label_key)
-            self.samples.append({'file_path': os.path.join(folder_path, f),
-                                 'label':label.lower(),
-                                 'attr':attr})
+        return info
 
-    def add_samples(self, samples):
-        if hasattr(samples, '__iter__'):
-            self.samples.extend(samples)
-        else:
-            self.samples.append(samples)
-    
-    def remove_duplicate(self):
-        """ Check for duplicates and remove them.
-        
-        Returns
-        =======
-        n_duplicates (int) -- Number of removed duplicates
+    def datasetValues(self) -> list:
+        """ Return dataset data values as a list of tuples of (label, number of samples, percentage on dataset) """
+        values = []
+        percent = lambda n, d : "{:.2f}%".format(n/(d if d > 0 else 1)*100)
+        n_sample = len(self.samples)
+        for label in self.labels + [None]:
+            n_sl = len(self.getsubsetbyLabel(label if label is not None else ""))
+            label = label if label is not None else "non-hotword"
+            values.append((label, n_sl, percent(n_sl, n_sample)))
+        return values
+
+    ########################################################################
+    ##### IMPORT / EXPORT
+    ########################################################################
+    def exportDataSet(self, exportName : str, exportPath : str, trace : bool = False):
+        """ Export this dataset to selected folder with data selected.
         """
-        file_names = set()
-        n_duplicate = 0
-        for sample in self.samples:
-            name = os.path.basename(sample['file_path'])
-            if name not in file_names:
-                file_names.add(name)
-            else:
-                self.samples.remove(sample)
-                n_duplicate += 1
-        return n_duplicate
-        
-
-    def get_subset_by_label(self, label:str):
-        """ Returns a subset containing samples with given label. """
-        subset = DataSet()
-        subset.add_samples([sample for sample in self.samples if sample['label'] == (label.lower() if label is not None else None)])
-        return subset
-    
-    def get_subset_by_labels(self, labels: list):
-        """ Returns a subset containing samples with given labels. """
-        subset = DataSet()
-        subset.add_samples([sample for sample in self.samples if sample['label'] in [label.lower() if label is not None else None for label in labels]])
-        return subset
-        
-    def split_dataset(self, ratios: list, split_using_attr: bool = False):
-        """ Splits the dataset to len(ratios) subsets using ratio. """
-        n_samples = len(self.samples)
-        target_n_samples = list(reversed([round(r * (n_samples / sum(ratios))) for r in ratios]))
-        delimiters = [sum(target_n_samples[:i]) for i in range(len(ratios))] + [n_samples]
-        ret = list()
-        if not split_using_attr:
-            shuffle(self.samples)
-        else:
-            self.samples = sorted(self.samples, key=lambda x: x['attr'] if x['attr'] is not None else 'zzzz')
-        for start, stop in zip(delimiters[:-1], delimiters[1:]):
-            ds = DataSet()
-            ds.add_samples(self.samples[start:stop])
-            ret.append(ds) 
-        return list(reversed(ret))
-
-    def write(self, file_path: str):
-        """ Write the dataset as a json file. """
-        with open(file_path, 'w') as f:
-            json.dump(self.samples, f)
-    
-    def load(self, json_file):
-        """ Loads a dataset from a json file."""
-        with open(json_file, 'r') as f:
-            self.add_samples(json.load(f))
-
-    def verify_and_clear(self):
-        """ Returns sample that do not longer exist. """
-        missing_samples = []
-        for f in self.samples:
-            if not os.path.isfile(f['file_path']):
-                missing_samples.append(f)
-                self.samples.remove(f)
-        return missing_samples
-        
-    def clear(self):
-        """ Empty the dataset"""
-        self.samples = []
-
-
-    def intersect(self, other):
-        """ Return a dataset which is the intersection of the two input datasets """
-        result = DataSet()
-        file_names = set([os.path.basename(s['file_path']) for s in other.samples])
-        for sample in self.samples:
-            if os.path.basename(sample['file_path']) in file_names:
-                result.add_samples(sample)
-
-        return result
-
-    def __add__(self, other):
-        ret = DataSet()
-        ret.add_samples(self.samples)
-        ret.add_samples(other.sample) 
-        return ret
-    
-    def __iadd__(self, other):
-        self.add_samples(other.samples)
-        return self
-    
-    def __isub__(self, other):
-        """ Remove files from second set using file_path value """
-        files_to_delete = [s['file_path'] for s in other.samples]
-        for sample in self.samples:
-            if sample['file_path'] in files_to_delete:
-                self.samples.remove(sample)
-        return self
-
-    def export(self, target_folder : str):
-        if not os.path.isdir(target_folder):
-            os.mkdir(target_folder)
+        targetFolder = os.path.join(exportPath, exportName)
+        if not os.path.isdir(targetFolder):
+            os.mkdir(targetFolder)
+        manifest = []
+        n_sample = len(self.samples)
+        counter = 0
         for s in self.samples:
-            baseName = os.path.basename(s.originalFile)
+            baseName = os.path.basename(s.file)
+            shutil.copy(s.file, os.path.join(targetFolder, baseName))
+            sample_desc = dict()
+            sample_desc['file'] = baseName
+            sample_desc['label'] = s.label
+            manifest.append(sample_desc)
+            counter += 1
+            if trace:
+                self.progress_notification.emit(counter, n_sample)
+
+        with open(os.path.join(targetFolder, "{}.json".format(exportName)), 'w') as f:
+            json.dump(manifest, f)
+
+        #TODO handle copy errors       
+
+    def importDataSet(self, manifestPath):
+        with open(manifestPath, 'r') as f:
+            manifest = json.load(f)
+        self.addFromManifest(os.path.dirname(manifestPath), manifest)
+
+
+    ########################################################################
+    ##### UTILS
+    ########################################################################
+    @classmethod
+    def listFolder(cls, folderPath: str, recursive: bool = False, ext: str = '.wav') -> list:
+        """ List folder content and return a list of absolute path. 
+        
+        Keyword arguments:
+        recursive -- Recursive search (default False)
+        ext -- File extension filer (default .wav)
+        """
+        files = [os.path.join(folderPath,f) for f in os.listdir(folderPath) if f.endswith(ext)]
+        if recursive:
+            for d in [os.path.join(folderPath, d) for d in os.listdir(folderPath) if os.path.isdir(os.path.join(folderPath, d))]:
+                files += DataSet.listFolder(os.path.join(folderPath, d), recursive=recursive, ext=ext)
+        return files
+
     
-    def __len__(self):
-        return len(self.samples)
-    
-    def __getitem__(self, key):
-        return self.samples[key]
-
-    def __iter__(self):
-        yield from self.samples
-
-
 class Sample:
-    def __init__(self):
-        self.originalFile = "" # original File URI
-        self.label = "" #sample label
-        self.attr = "" # sample attribute
-        self.procFile = "" # processed file URI
-        self.featureFile = " " # feature file URI
+    def __init__(self, sampleDict: dict = None):
+        self.file = "" # File URI
+        self.label = "" # Sample label
+        self.attr = "" # Sample attribute
+        self.proc = None # Processing description (None if original)
+        self.originalFile = None # Original file name (None if original)
+        self.featureFile = None
+        if sampleDict is not None:
+            for key in sampleDict.keys():
+                if key in self.__dict__.keys():
+                    self.__setattr__(key, sampleDict[key])
+
+    @property
+    def sampleDesc(self) -> dict:
+        return {
+            "label" : self.label,
+            "file" : self.file,
+            "attr" : self.attr,
+            "proc" : self.proc,
+            "originalFile" : self.originalFile,
+            "featureFile" : self.featureFile
+        }
 

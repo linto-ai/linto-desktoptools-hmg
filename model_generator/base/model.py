@@ -1,5 +1,9 @@
 import json
 
+from tensorflow.keras.models import Sequential, save_model
+from tensorflow.keras.layers import Dense, GRU
+
+
 class _Layer:
     name = None
     def __init__(self, is_input: bool = False, is_output: bool = False, is_required: bool = False):
@@ -23,6 +27,9 @@ class _Layer:
     def getEditableParameters(self) -> dict:
         ''' Return configurables parameters and types for ListItem creation'''
         return list()
+
+    def getKerasLayer(self, input_shape = None):
+        pass
         
 class GRU_Layer(_Layer):
     name = "gru"
@@ -65,6 +72,21 @@ class GRU_Layer(_Layer):
         params.append(("reset_after", bool, self.reset_after))
         return params
 
+    def getKerasLayer(self, input_shape = None):
+        if input_shape is None:
+            return GRU(self.n_cell,
+                        activation=self.activation_fun,
+                        name="input" if self.is_input else self.name,
+                        unroll=self.unroll,
+                        reset_after=self.reset_after)
+        else:
+            return GRU(self.n_cell,
+                        activation=self.activation_fun,
+                        input_shape=input_shape,
+                        name="input" if self.is_input else self.name,
+                        unroll=self.unroll,
+                        reset_after=self.reset_after)
+
 class Dense_Layer(_Layer):
     name = "dense"
     dense_act = ["relu", "sigmoid", "linear"]
@@ -91,6 +113,9 @@ class Dense_Layer(_Layer):
         params.append(("activation_fun", list, self.activation_fun, Dense_Layer.dense_act))
         return params
 
+    def getKerasLayer(self, input_shape = None):
+        return Dense(units=self.n_cell, activation=self.activation_fun)
+
 class Output_Layer(_Layer):
     name = "output"
     def __init__(self, 
@@ -100,6 +125,7 @@ class Output_Layer(_Layer):
                  is_output: bool = False,
                  is_required: bool = True):
         _Layer.__init__(self, is_input, is_output, is_required)
+        self.activation_fun = activation_fun
         self.n_cell = n_cell
         
     def toDict(self) -> dict:
@@ -108,6 +134,9 @@ class Output_Layer(_Layer):
         layer_dict["activation_fun"] = "sigmoid"
         return layer_dict
 
+    def getKerasLayer(self, input_shape = None):
+        return Dense(units=self.n_cell, activation=self.activation_fun, name="output")
+
 class _Model:
     allowed_layers = []
     def __init__(self, name: str):
@@ -115,6 +144,9 @@ class _Model:
         self.name = name
         self.type = "void"
         self.layers = []
+        self.optimizer = None
+        self.loss = "mean_squared_error"
+        self.metrics = ["accuracy"]
         
     def toDict(self) -> dict:
         manifest = dict()
@@ -135,15 +167,26 @@ class _Model:
                 json.dump(manifest, f)
         except Exception as e:
             raise Exception("Could not write model at {}: {}".format(modelPath, e))
+    
+    def toKerasModel(self, input_shape: tuple, output_shape: int) -> Sequential:
+        model = Sequential()
+        model.add(self.layers[0].getKerasLayer(input_shape=input_shape))
+        for layer in self.layers[1:-1]:
+            model.add(layer.getKerasLayer())
+        self.layers[-1].n_cell = output_shape
+        model.add(self.layers[-1].getKerasLayer())
+        model.compile(self.optimizer, loss=self.loss, metrics=self.metrics)
+        return model
 
 class GRU_Model(_Model):
     allowed_layers = ["gru", "dense"]
     def __init__(self, name: str = "", layers: list = None):
         _Model.__init__(self, name)
         self.type = "gru"
+        self.optimizer = "rmsprop"
         self.layers = [
             GRU_Layer(is_input=True, is_required=True),
-            Dense_Layer(),
+            Dense_Layer(is_input=False),
             Output_Layer(1)
         ]
 
@@ -178,4 +221,6 @@ def getLayerbyType(layer_type) -> _Layer:
         return Output_Layer
     else:
         raise Exception("Error: Layer {} not known.".format(layer_type))
-        
+
+def saveModel(model, path):
+    save_model(model, path)

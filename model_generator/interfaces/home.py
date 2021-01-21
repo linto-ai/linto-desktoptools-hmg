@@ -6,7 +6,7 @@ import json
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from base.project_new import Project
+from base import Project
 from interfaces.ui.home_ui import Ui_home
 from interfaces.utils.qtutils import create_infoline_layout, create_horizontal_line, empty_layout
 from interfaces.create_dialog import CreateDialog

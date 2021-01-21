@@ -5,7 +5,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets, QtChart
 from interfaces.ui.navigation_ui import Ui_Form
 
 from interfaces.modules import _Module
-from interfaces.modules import Data, Features, Models
+from interfaces.modules import Data, Features, Models, Training
 
 from interfaces.utils.qtutils import CustomButton
 
@@ -25,13 +25,14 @@ class Navigation(QtWidgets.QWidget):
         self.populate()
 
     def populate(self):
-        for category in [self.ui.preparationWidget, self.ui.processingWidget, self.ui.processingWidget]:
+        for category in [self.ui.preparationWidget, self.ui.processingWidget, self.ui.outputWidget]:
             category.setLayout(QtWidgets.QHBoxLayout())
             category.layout().addItem(QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum))
         modules = [
             Data,
             Features,
-            Models
+            Models,
+            Training, 
         ]
         for module in modules:
             targetWidget = {"prep" : self.ui.preparationWidget, "proc" : self.ui.processingWidget, "output" : self.ui.processingWidget}.get(module.category, "None")

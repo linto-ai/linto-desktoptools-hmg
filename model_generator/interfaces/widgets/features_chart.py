@@ -23,7 +23,7 @@ class Feature_Chart(QtWidgets.QWidget):
         self.figure.clear()
         self.canvas = FigureCanvas(self.figure)
         self.layout.addWidget(self.canvas)
-        hotwords = self.project.data["keywords"]
+        hotwords = self.project.keywords
         n_graph = 1 + display_variance
 
         for i, hotword in enumerate(hotwords):

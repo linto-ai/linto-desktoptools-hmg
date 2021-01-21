@@ -16,7 +16,7 @@ from interfaces.widgets.features_widgets import MFCC
 from interfaces.widgets.features_chart import Feature_Chart
 from interfaces.utils.qtutils import empty_layout
 
-from interfaces.dialogs import CreateFeature, ConfirmDelete
+from interfaces.dialogs import CreateFeature, ConfirmDelete, SimpleDialog
 
 class Features(_Module):
     moduleTitle= "Features"
@@ -101,7 +101,7 @@ class Features(_Module):
     def populateDataSetCB(self):
         self.chartWidget.clearChart()
         self.ui.dataSet_CB.clear()
-        for dataset in self.project.getDatasetNames():
+        for dataset in self.project.datasets:
             self.ui.dataSet_CB.addItem(dataset, userData=dataset)
 
     def update_chart(self):
@@ -128,7 +128,7 @@ class Features(_Module):
             self.ui.preEmp_SB.setValue(self.currentFeatures.emphasis_factor)
             self.ui.window_t_SP.setValue(self.currentFeatures.window_length)
             self.ui.stride_t_SB.setValue(self.currentFeatures.window_stride)
-            self.ui.window_fun_CoB.setCurrentText(self.currentFeatures.window_fun)
+            self.ui.window_fun_CoB.setCurrentText(self.currentFeatures.window_fun if self.currentFeatures.window_fun is not None else "none")
 
     def onCreateClicked(self):
         dialog = CreateFeature(self, self.project.features, ["mfcc"])
@@ -141,7 +141,12 @@ class Features(_Module):
         dialog.show()
 
     def deleteProfile(self, name: str):
-        self.project.deleteFeatures(name)
+        try:
+            self.project.deleteFeatures(name)
+        except Exception as e:
+            dialog = SimpleDialog(self, "Cannot delete features", str(e))
+            dialog.show()
+            return
         self.populateCB()
         self.currentFeatures = None
         if len(self.project.features) == 0:
