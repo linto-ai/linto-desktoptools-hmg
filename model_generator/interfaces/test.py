@@ -150,8 +150,8 @@ class Test(QtWidgets.QWidget):
         # Result sorting
         result_matrix = np.zeros((len(hotwords) + 1, len(hotwords) + 1))
         for f, result, label in zip(files, res, labels):
-            ct = np.argmax(label) + 1 if any(label) else 0
-            cp = np.squeeze(np.argwhere(result > self.threshold)) + 1
+            ct = np.argmax(label) + 1 if any(label) else 0 
+            cp = np.squeeze(np.argwhere(result > self.threshold)) + 1 
             if cp.size == 0:
                 cp = [0]
             elif cp.ndim == 0:
@@ -162,6 +162,7 @@ class Test(QtWidgets.QWidget):
                     bad_results.append((f, ct, c))
             
         self.progress_display(1, 1, "Done")
+        
         # Display Metrics
         self.display_metrics(result_matrix, len(res))
         self.display_false_results(bad_results)

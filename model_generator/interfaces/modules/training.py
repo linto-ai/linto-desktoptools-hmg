@@ -54,7 +54,6 @@ class Training(_Module):
         self.project.dataset_updated.connect(self.populateDataset)
         self.project.feature_updated.connect(self.populateFeatures)
         self.project.model_updated.connect(self.populateModels)
-        self.project.trained_updated.connect(self.populateProfiles)
 
         ## Interface interactivity
         self.ui.profile_CB.currentTextChanged.connect(self.onProfileChanged)
@@ -69,7 +68,7 @@ class Training(_Module):
         self.ui.clear_PB.clicked.connect(self.onClearClicked)
 
     ########################################################################
-    ##### UI LOGIC
+    ##### UI LOGIC AND UPDATES
     ########################################################################
 
     def setupCharts(self):
@@ -93,6 +92,10 @@ class Training(_Module):
         self.ui.dataset_CB.setEnabled(active)
         self.ui.features_CB.setEnabled(active)
         self.ui.model_CB.setEnabled(active)
+        if self.currentTrained.isSet:
+            self.ui.dataset_CB.setCurrentText(self.currentTrained.dataset.dataSetName)
+            self.ui.features_CB.setCurrentText(self.currentTrained.features.name)
+            self.ui.model_CB.setCurrentText(self.currentTrained.model.name)
 
     def updateSetGroup(self):
         active = self.currentTrained is not None
@@ -178,6 +181,7 @@ class Training(_Module):
             self.changeProfile()
         else:
             self.setupProfile()
+            self.project.trained_updated.emit()
 
     def onDeleteClicked(self):
         dialog = ConfirmDelete(self, "Delete Trained Model", "Do you want to delete", self.ui.profile_CB.currentText())
@@ -209,6 +213,7 @@ class Training(_Module):
 
     def onClearClicked(self):
         self.currentTrained.clearTraining()
+        self.project.trained_updated.emit()
         self.onProfileChanged(self.currentTrained.name)
 
     def updateState(self, msg: str):
@@ -235,9 +240,11 @@ class Training(_Module):
     def createNewProfile(self, name):
         self.currentTrained = Trained(name)
         self.project.addTrained(self.currentTrained)
+        self.populateProfiles()
 
     def deleteProfile(self):
         self.project.deleteTrained(self.currentTrained)
+        self.populateProfiles()
     
     def setupProfile(self):
         self.currentTrained.setProfiles(
@@ -257,7 +264,7 @@ class Training(_Module):
 
     def train(self):
         # Training session
-        if self.trainingSession == None:
+        if self.trainingSession is None:
             if self.currentTrained.hasModel:
                 model = loadModel(self.currentTrained.trainedModelPath)
             else:
@@ -279,11 +286,11 @@ class Training(_Module):
         valSet.loadDataSet(self.currentTrained.valSetPath)
 
         # prepare inputs / outputs
-        train_input, train_output = prepare_input_output(trainSet, 
+        train_input, train_output = prepare_input_output([trainSet], 
                                                         self.currentTrained.features, 
                                                         traceCallBack=self.updateState, 
                                                         save_features_folder=self.currentTrained.featureFolder)
-        val_input, val_output = prepare_input_output(valSet,
+        val_input, val_output = prepare_input_output([valSet],
                                                      self.currentTrained.features, 
                                                      traceCallBack=self.updateState,
                                                      save_features_folder=self.currentTrained.featureFolder)
@@ -303,6 +310,8 @@ class Training(_Module):
                                         shuffle=self.ui.shuffle_CB.isChecked())
 
         self.currentTrained.isTrained = True
+        self.currentTrained.writeTrained()
+        self.project.trained_updated.emit()
         self.currentTrained.epoch = self.trainingSession.epoch
         self.currentTrained.writeTrained()
 

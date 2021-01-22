@@ -11,4 +11,5 @@ class SimpleDialog(QtWidgets.QDialog):
         self.ui.setupUi(self)
         self.setWindowTitle(title)
         self.ui.label.setText(message)
+        self.ui.label.setWordWrap(True)
         self.ui.ok_PB.clicked.connect(self.close)

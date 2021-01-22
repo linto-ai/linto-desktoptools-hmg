@@ -6,6 +6,33 @@ import shutil
 
 from PyQt5 import QtCore
 
+class Sample:
+    def __init__(self, sampleDict: dict = None):
+        self.file = "" # File URI
+        self.label = "" # Sample label
+        self.attr = "" # Sample attribute
+        self.proc = None # Processing description (None if original)
+        self.originalFile = None # Original file name (None if original)
+        self.featureFile = None
+        if sampleDict is not None:
+            for key in sampleDict.keys():
+                if key in self.__dict__.keys():
+                    self.__setattr__(key, sampleDict[key])
+
+    @property
+    def sampleDesc(self) -> dict:
+        return {
+            "label" : self.label,
+            "file" : self.file,
+            "attr" : self.attr,
+            "proc" : self.proc,
+            "originalFile" : self.originalFile,
+            "featureFile" : self.featureFile
+        }
+    
+    def __eq__(self, other):
+        return self.file == other.file
+
 class DataSet(QtCore.QObject):
     """ DataSet represent a collection of audio samples.
     The class provides methods to manage, select and export data.
@@ -49,6 +76,16 @@ class DataSet(QtCore.QObject):
         self.saveDataSet()
         self.dataset_updated.emit()
     
+    def addSample(self, sample: Sample):
+        self.samples.append(sample)
+
+    def removeSamples(self, samples: list):
+        for sample in self.samples:
+            if sample in samples:
+                self.samples.remove(sample)
+        self.saveDataSet()
+        self.dataset_updated.emit()
+    
     def addFromManifest(self, manifestRoot, manifest):
         for s in manifest:
             self.samples.append(Sample({"label": s["label"], "file" : os.path.join(manifestRoot, s["file"])}))
@@ -71,6 +108,7 @@ class DataSet(QtCore.QObject):
         test_set = DataSet("test", self.labels)
     
         # Split the data by labels
+        shuffle(self.samples)
         for label in self.labels + [None]:
             subset = self.getsubsetbyLabel(label)
             delimiter_1 = int(distribution[0] * len(subset))
@@ -80,6 +118,10 @@ class DataSet(QtCore.QObject):
             test_set.samples.extend(subset[delimiter_2:])
 
         return (train_set, val_set, test_set)
+
+    def __iadd__(self, other):
+        self.samples.extend(other.samples)
+        return self
         
     ########################################################################
     ##### DISPLAY
@@ -167,27 +209,4 @@ class DataSet(QtCore.QObject):
         return files
 
     
-class Sample:
-    def __init__(self, sampleDict: dict = None):
-        self.file = "" # File URI
-        self.label = "" # Sample label
-        self.attr = "" # Sample attribute
-        self.proc = None # Processing description (None if original)
-        self.originalFile = None # Original file name (None if original)
-        self.featureFile = None
-        if sampleDict is not None:
-            for key in sampleDict.keys():
-                if key in self.__dict__.keys():
-                    self.__setattr__(key, sampleDict[key])
-
-    @property
-    def sampleDesc(self) -> dict:
-        return {
-            "label" : self.label,
-            "file" : self.file,
-            "attr" : self.attr,
-            "proc" : self.proc,
-            "originalFile" : self.originalFile,
-            "featureFile" : self.featureFile
-        }
 

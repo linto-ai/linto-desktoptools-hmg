@@ -40,42 +40,57 @@ def createOutputs(labels: list) -> dict:
         outputFormat[label] = arr
     return outputFormat
 
-def prepare_input_output(dataset: DataSet, features: _Feature, save_features_folder: str = None, traceCallBack = None) -> tuple:
+def prepare_input_output(datasets: list, features: _Feature, save_features_folder: str = None, traceCallBack = None, returnSamples: bool = False) -> tuple:
     """ Generate input / output from a dataset """
-    labels = createOutputs(dataset.labels)
+    labels = createOutputs(datasets[0].labels)
     save_feature = save_features_folder is not None
     inputs = []
     outputs = []
-    n_sample = len(dataset.samples)
-    for i, sample in enumerate(dataset.samples):
-        try:
-            if sample.featureFile is not None:
-                try:
-                    feats = loadFeatureFile(sample.featureFile, features.feature_shape)
-                except Exception as e:
+    samples = []
+    n_sample = sum([len(dataset.samples) for dataset in datasets])
+    for dataset in datasets:
+        for i, sample in enumerate(dataset.samples):
+            try:
+                if sample.featureFile is not None:
+                    try:
+                        feats = loadFeatureFile(sample.featureFile, features.feature_shape)
+                    except Exception as e:
+                        feats = file_to_feat(sample.file, features)
+                        sample.featureFile = None
+                else:
                     feats = file_to_feat(sample.file, features)
-                    sample.featureFile = None
+                    if save_feature:
+                        featFile = os.path.join(save_features_folder, os.path.basename(sample.file) + ".feat")
+                        sample.featureFile = featFile
+                        try:
+                            writeFeatureFile(featFile, feats)
+                        except Exception as e:
+                            print(e)
+            except Exception as e:
+                print("Failed to extract parameter from {}: {}".format(sample.file, e))
+                continue
             else:
-                feats = file_to_feat(sample.file, features)
-                if save_feature:
-                    featFile = os.path.join(save_features_folder, os.path.basename(sample.file) + ".feat")
-                    sample.featureFile = featFile
-                    writeFeatureFile(featFile, feats)
-                
-        except Exception as e:
-            print("Failed to extract parameter from {}: {}".format(sample.file, e))
-            continue
-        else:
-            inputs.append(feats)
-            outputs.append(labels[sample.label])
-        if traceCallBack is not None:
-            traceCallBack("Extracting features from {}: {}/{}".format(dataset.dataSetName, i, n_sample))
+                try:
+                    inputs.append(feats)
+                except Exception as e:
+                    print(e)
+                outputs.append(labels[sample.label])
+                if returnSamples:
+                    samples.append(sample)
+            if traceCallBack is not None:
+                traceCallBack("Extracting features from {}: {}/{}".format(dataset.dataSetName, i, n_sample))
+
+        if save_features_folder is not None:
+            if dataset.datasetFile is not None and dataset.datasetFile != "":
+                dataset.saveDataSet()
+
     inputs = np.array(inputs)
     outputs = np.array(outputs)
-
-    if save_features_folder is not None:
-        dataset.saveDataSet()
-    return inputs, outputs
+    
+    if returnSamples:
+        return samples, inputs, outputs
+    else:
+        return inputs, outputs
 
 def writeFeatureFile(filePath: str, content: np.ndarray):
     with open(filePath, 'bw') as f:

@@ -18,6 +18,15 @@ def create_horizontal_line():
     line.setFrameShape(QtWidgets.QFrame.HLine)
     return line
 
+def horizontalLine():
+    '''
+    Generates and returns a Horizontal line
+    ''' 
+    line = QtWidgets.QFrame()
+    line.setFrameShape(QtWidgets.QFrame.HLine)
+    line.setFrameShadow(QtWidgets.QFrame.Sunken)
+    return line
+
 def create_vertical_line():
     line = QtWidgets.QFrame()
     line.setFrameShape(QtWidgets.QFrame.VLine)
@@ -28,6 +37,17 @@ def create_vertical_spacer():
 
 def create_horizontal_spacer():
     return QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+
+def labeledTextLine(label, value, total) -> QtWidgets.QWidget:
+    widget = QtWidgets.QWidget()
+    layout = QtWidgets.QHBoxLayout()
+    qlabel = QtWidgets.QLabel(label)
+    lineEd = QtWidgets.QLineEdit("{}/{} ({:.4}%)".format(value, total, float(value)/total*100))
+    lineEd.setReadOnly(True)
+    layout.addWidget(qlabel)
+    layout.addWidget(lineEd)
+    widget.setLayout(layout)
+    return widget
 
 def empty_layout(layout):
     if layout is not None:
