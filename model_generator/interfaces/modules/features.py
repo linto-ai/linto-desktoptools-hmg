@@ -9,8 +9,6 @@ from .module import _Module
 
 from base import DataSet, Project, _Feature, getFeaturesByType
 from interfaces.modules.ui.features_ui import Ui_Features
-from interfaces.ui.features_chart_ui import Ui_Features_Charts
-from interfaces.ui.mfcc_ui import Ui_MFCC
 from interfaces.widgets.features_widgets import MFCC
 from interfaces.widgets.features_chart import Feature_Chart
 from interfaces.utils.qtutils import empty_layout

@@ -139,6 +139,8 @@ class Output_Layer(_Layer):
 
 class _Model:
     allowed_layers = []
+    allowed_optimizer = []
+    allowed_loss_fun = []
     def __init__(self, name: str):
         self.modelPath = ''
         self.name = name
@@ -180,6 +182,8 @@ class _Model:
 
 class GRU_Model(_Model):
     allowed_layers = ["gru", "dense"]
+    allowed_optimizer = ["rmsprop"]
+    allowed_loss_fun = ["mean_squared_error"]
     def __init__(self, name: str = "", layers: list = None):
         _Model.__init__(self, name)
         self.type = "gru"

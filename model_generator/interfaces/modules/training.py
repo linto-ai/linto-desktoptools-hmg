@@ -85,6 +85,7 @@ class Training(_Module):
         self.updateProfilesGroup()
         self.updateSetGroup()
         self.updateTrainGroup()
+        self.updateClearPB()
 
     def updateProfilesGroup(self):
         self.ui.delete_PB.setEnabled(self.currentTrained is not None)
@@ -92,7 +93,7 @@ class Training(_Module):
         self.ui.dataset_CB.setEnabled(active)
         self.ui.features_CB.setEnabled(active)
         self.ui.model_CB.setEnabled(active)
-        if self.currentTrained.isSet:
+        if active and self.currentTrained.isSet:
             self.ui.dataset_CB.setCurrentText(self.currentTrained.dataset.dataSetName)
             self.ui.features_CB.setCurrentText(self.currentTrained.features.name)
             self.ui.model_CB.setCurrentText(self.currentTrained.model.name)
@@ -109,12 +110,18 @@ class Training(_Module):
         self.ui.valSet_SB.setEnabled(editable)
         self.ui.testSet_SB.setEnabled(editable)
         self.ui.set_PB.setText("Set Profile" if editable else "Change Profile")
+        self.ui.set_PB.setEnabled(editable)
     
     def updateTrainGroup(self):
         ready = self.currentTrained is not None and self.currentTrained.isSet
         self.ui.parameters_Group.setEnabled(ready)
         self.ui.train_PB.setEnabled(ready and not self.isTraining)
         self.ui.stop_PB.setEnabled(ready and self.isTraining)
+
+    def updateClearPB(self):
+        active =  self.currentTrained is not None
+        active = active and self.currentTrained.isTrained
+        self.ui.clear_PB.setEnabled(active)
 
     def populateDataset(self):
         currentdataset = self.ui.dataset_CB.currentText()
@@ -244,7 +251,8 @@ class Training(_Module):
 
     def deleteProfile(self):
         self.project.deleteTrained(self.currentTrained)
-        self.populateProfiles()
+        self.currentTrained = None
+        self.updateUI()
     
     def setupProfile(self):
         self.currentTrained.setProfiles(

@@ -103,7 +103,12 @@ class Data(_Module):
         self.updateDisplay()
 
     def deleteDataset(self, name: str):
-        self.project.deleteDataSet(name)
+        try:
+            self.project.deleteDataSet(name)
+        except Exception as e:
+            dialog = SimpleDialog(self, "Error", str(e))
+            dialog.show()
+            return
         self.populateDatasetCB()
         if len(self.project.datasets) > 0:
             self.currentDataset = self.project.getDatasetByName(self.project.datasets[0])

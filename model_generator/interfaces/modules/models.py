@@ -11,7 +11,7 @@ from base import Project
 from base.model import _Model, _Layer, getLayerbyType, getModelbyType
 
 from interfaces.modules.ui.models_ui import Ui_Form
-from interfaces.dialogs import CreateModel, ConfirmDelete
+from interfaces.dialogs import CreateModel, ConfirmDelete, SimpleDialog
 
 from interfaces.utils.qtutils import create_horizontal_spacer, create_vertical_line
 from interfaces.utils.assets import getIconPath
@@ -33,8 +33,12 @@ class Models(_Module):
             self.currentModel = self.project.getModel(self.project.models[-1])
         else:
             self.currentModel = None
+
+        add_icon = QtGui.QPixmap(getIconPath(__file__, "icons/add.png"))
+        self.ui.add_PB.setIcon(QtGui.QIcon(add_icon))
         self.populateModelProfiles()
         self.loadLayerlist()
+        self.updateCompileLoss()
 
         # CONNECT
         self.ui.create_PB.clicked.connect(self.onCreateClicked)
@@ -49,7 +53,22 @@ class Models(_Module):
             self.currentModel = self.project.getModel(name)
             self.loadLayerlist()
         else:
+            self.currentModel = None
             self.ui.layerList_List.clear()
+        self.updateCompileLoss()
+
+    def updateCompileLoss(self):
+        self.ui.optimizer_CB.clear()
+        self.ui.loss_CB.clear()
+        if self.currentModel is None:
+            self.ui.compile_group.setEnabled(False)
+        else:
+            for o in self.currentModel.allowed_optimizer:
+                self.ui.optimizer_CB.addItem(o, userData=o)
+            self.ui.optimizer_CB.setCurrentText(self.currentModel.optimizer)
+            for l in self.currentModel.allowed_loss_fun:
+                self.ui.loss_CB.addItem(l, userData=l)
+            self.ui.loss_CB.setCurrentText(self.currentModel.loss)
 
     def populateModelProfiles(self):
         self.ui.model_CB.clear()
@@ -84,7 +103,11 @@ class Models(_Module):
         dialog.show()
     
     def deleteModel(self, name):
-        self.project.deleteModel(name)
+        try:
+            self.project.deleteModel(name)
+        except Exception as e:
+            dialog = SimpleDialog(self, "Error", str(e))
+            dialog.show()
 
     def onSaveClicked(self):
         # Fetch layers and layers values in list

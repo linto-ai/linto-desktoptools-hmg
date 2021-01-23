@@ -68,6 +68,7 @@ class Ui_Test(object):
         self.browse_PB.setObjectName("browse_PB")
         self.externalTest_group.addWidget(self.browse_PB)
         self.exportTestSet_PB = QtWidgets.QPushButton(self.testSetGroup)
+        self.exportTestSet_PB.setEnabled(False)
         self.exportTestSet_PB.setObjectName("exportTestSet_PB")
         self.externalTest_group.addWidget(self.exportTestSet_PB)
         self.verticalLayout_2.addLayout(self.externalTest_group)

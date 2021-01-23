@@ -4,13 +4,14 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from .ui.create_dialog_ui import Ui_Dialog
+from interfaces.utils.assets import getIconPath
 
 if getattr(sys, 'frozen', False):
     DIR_PATH = os.path.dirname(sys.executable)
 else:
     DIR_PATH = os.path.dirname(__file__)
 
-class CreateDialog(QtWidgets.QDialog):
+class CreateProjectDialog(QtWidgets.QDialog):
     """
     Dialog window to create a new project.
     """
@@ -43,7 +44,7 @@ class CreateDialog(QtWidgets.QDialog):
 
     def add_element(self):
         l_item = QtWidgets.QListWidgetItem()
-        l_widget = Activation_Sample("hotword_{}".format(self.ui.hotwords_Widget.count()), l_item)
+        l_widget = KeywordEntry("hotword_{}".format(self.ui.hotwords_Widget.count()), l_item)
         l_widget.deleted.connect(self.delete_element)
         l_item.setSizeHint(l_widget.sizeHint())
         self.ui.hotwords_Widget.addItem(l_item)
@@ -77,7 +78,7 @@ class CreateDialog(QtWidgets.QDialog):
         self.on_create.emit(self.ui.name_LE.text(), self.ui.location_LE.text(), hw_list)
         self.close()
         
-class Activation_Sample(QtWidgets.QWidget):
+class KeywordEntry(QtWidgets.QWidget):
     deleted = QtCore.pyqtSignal(QtWidgets.QListWidgetItem, name='deleted')
     def __init__(self, basename: str, list_item):
         QtWidgets.QWidget.__init__(self)
@@ -85,7 +86,7 @@ class Activation_Sample(QtWidgets.QWidget):
         self._name = basename
         self.lineEdit = QtWidgets.QLineEdit(basename)
         self.delete_PB = QtWidgets.QPushButton()
-        cancel_icon = QtGui.QPixmap("{}/icons/cancel.png".format(DIR_PATH))
+        cancel_icon = QtGui.QPixmap(getIconPath(__file__, "icons/cancel.png"))
         self.delete_PB.setIcon(QtGui.QIcon(cancel_icon))
         self.delete_PB.setIconSize(QtCore.QSize(20,20))
 

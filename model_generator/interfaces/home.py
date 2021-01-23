@@ -9,7 +9,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from base import Project
 from interfaces.ui.home_ui import Ui_home
 from interfaces.utils.qtutils import create_infoline_layout, create_horizontal_line, empty_layout
-from interfaces.create_dialog import CreateDialog
+from interfaces.dialogs import CreateProjectDialog
 
 if getattr(sys, 'frozen', False):
     DIR_PATH = os.path.dirname(sys.executable)
@@ -81,7 +81,7 @@ class Home(QtWidgets.QWidget):
             self.is_openned = True
             
     def _on_create_project(self):
-        dialog = CreateDialog(self, self.ui.new_project_name.text(), self.ui.new_project_location.text())
+        dialog = CreateProjectDialog(self, self.ui.new_project_name.text(), self.ui.new_project_location.text())
         dialog.show()
         dialog.on_create.connect(self._on_project_created)
 
@@ -93,6 +93,9 @@ class Home(QtWidgets.QWidget):
         
     def on_project_openned(self):
         self.update_user_prefs()
+
+    def on_project_closed(self):
+        self.is_openned = False
         
     def load_user_prefs(self):
         """ 

@@ -16,13 +16,18 @@ else:
 
 class Navigation(QtWidgets.QWidget):
     clicked = QtCore.pyqtSignal(_Module, name='clicked')
+    project_closed = QtCore.pyqtSignal(name='project_closed')
 
     def __init__(self, project):
         super().__init__()
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.project = project
+        self.instanciedModules = []
         self.populate()
+
+        # CONNECT
+        self.ui.close_PB.clicked.connect(self.project_closed.emit)
 
     def populate(self):
         for category in [self.ui.preparationWidget, self.ui.processingWidget, self.ui.outputWidget]:
@@ -44,7 +49,7 @@ class Navigation(QtWidgets.QWidget):
             button = instance.button()
             button.clicked.connect(self.clicked.emit)
             targetWidget.layout().insertWidget(targetWidget.layout().count() -1 , button) # Insert the widget before the HSpacer
-            
+            self.instanciedModules.append(instance)
 
-    def update(self):
+    def onCloseClicked(self):
         pass

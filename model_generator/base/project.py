@@ -43,7 +43,7 @@ class Project(QtCore.QObject):
         if name in self.datasets:
             usedBy = self.datasetUsedBy(name)
             if len(usedBy) > 0:
-                raise Exception("Can't remove dataset. In use by trained models: {}".format("-" + "\n-".join(usedBy)))
+                raise Exception("Can't remove dataset. In use by trained models: \n{}".format("-" + "\n-".join(usedBy)))
             self.datasets.remove(name)
             shutil.rmtree(dataSetPath)
             self._write()
@@ -145,7 +145,7 @@ class Project(QtCore.QObject):
         modelPath = os.path.join(self.project_location, "models", name +".json")
         usedBy = self.modelUsedBy(name)
         if len(usedBy) > 0:
-            raise Exception("Can't remove model. In use by trained models: {}".format("-" + "\n-".join(usedBy)))
+            raise Exception("Can't remove model. In use by trained models: \n{}".format("-" + "\n-".join(usedBy)))
         self.models.remove(name)
         os.remove(modelPath)
         self.update_project()

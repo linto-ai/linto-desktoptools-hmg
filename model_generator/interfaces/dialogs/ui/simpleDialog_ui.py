@@ -14,11 +14,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(857, 505)
+        Dialog.resize(566, 259)
         self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
         self.verticalLayout.setObjectName("verticalLayout")
         self.label = QtWidgets.QLabel(Dialog)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setWordWrap(True)
         self.label.setObjectName("label")
         self.verticalLayout.addWidget(self.label)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
