@@ -89,7 +89,15 @@ class Trained:
         self.hasModel = False
         self.isTrained = False
         self.epoch = 0
+        if os.path.isfile(self.trainedModelPath):
+            os.remove(self.trainedModelPath)
+        if os.path.isfile(self.logFilePath):
+            os.remove(self.logFilePath)
         self.writeTrained()
+
+    def shortDesc(self) -> str:
+        """ Return a short description of the trained model """
+        return "Dataset : {}\nFeatures: {}\nModel: {}\nEpochs: {}".format(self.dataset.dataSetName, self.features.name, self.model.name, self.epoch)
 
     @property
     def folder(self):

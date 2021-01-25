@@ -30,6 +30,9 @@ class _Layer:
 
     def getKerasLayer(self, input_shape = None):
         pass
+
+    def toShortDesc(self) -> str:
+        return "Abstract layer"
         
 class GRU_Layer(_Layer):
     name = "gru"
@@ -86,6 +89,9 @@ class GRU_Layer(_Layer):
                         name="input" if self.is_input else self.name,
                         unroll=self.unroll,
                         reset_after=self.reset_after)
+    
+    def toShortDesc(self) -> str:
+        return "GRU Layer {} cells ({})".format(self.n_cell, self.activation_fun)
 
 class Dense_Layer(_Layer):
     name = "dense"
@@ -116,6 +122,9 @@ class Dense_Layer(_Layer):
     def getKerasLayer(self, input_shape = None):
         return Dense(units=self.n_cell, activation=self.activation_fun)
 
+    def toShortDesc(self) -> str:
+        return "Dense Layer {} cells ({})".format(self.n_cell, self.activation_fun)
+
 class Output_Layer(_Layer):
     name = "output"
     def __init__(self, 
@@ -136,6 +145,9 @@ class Output_Layer(_Layer):
 
     def getKerasLayer(self, input_shape = None):
         return Dense(units=self.n_cell, activation=self.activation_fun, name="output")
+    
+    def toShortDesc(self) -> str:
+        return "Output Layer"
 
 class _Model:
     allowed_layers = []
@@ -179,6 +191,12 @@ class _Model:
         model.add(self.layers[-1].getKerasLayer())
         model.compile(self.optimizer, loss=self.loss, metrics=self.metrics)
         return model
+
+    def toShortDesc(self) -> str:
+        desc = "Model {}\nLayers:\n".format(self.name)
+        for layer in self.layers:
+            desc.append("{}\n".format(layer.toShortDesc()))
+        return desc
 
 class GRU_Model(_Model):
     allowed_layers = ["gru", "dense"]

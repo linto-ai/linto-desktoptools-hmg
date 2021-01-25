@@ -42,6 +42,12 @@ class _Feature:
 
     def extract_function(self) -> callable:
         return lambda x : None
+    
+    def toShortDesc(self) -> str:
+        desc = "{} :{}\n".format(self.name, self.feature_type)
+        for attr in ["sample_rate", "sample_length", "window_length", "window_stride", "window_fun"]:
+            desc.append("{} : {}\n".format(attr, self.__getattribute__(attr)))
+        return desc
 
     @property
     def sample_s(self):
@@ -106,6 +112,12 @@ class MFCC_Features(_Feature):
                     num_coef = self.n_coefs, 
                     hamming = self.window_fun == 'hamming',
                     preEmp  = self.emphasis_factor)
+                    
+    def toShortDesc(self) -> str:
+        desc = _Feature.toShortDesc(self)
+        for attr in ["fft_size", "n_filters", "n_coefs"]:
+            desc.append("{} : {}\n".format(attr, self.__getattribute__(attr)))
+        return desc
 
     @property
     def feature_shape(self) -> tuple:

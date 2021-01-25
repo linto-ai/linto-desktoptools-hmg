@@ -61,6 +61,7 @@ class Evaluation(_Module):
             else:
                 self.ui.profile_CB.setCurrentIndex(len(profiles) - 1)
                 self.currentProfile = self.project.getTrained(self.ui.profile_CB.currentText())
+                self.ui.profile_CB.setToolTip(self.currentProfile.shortDesc())
         else:
             self.currentProfile = None
 
@@ -71,6 +72,10 @@ class Evaluation(_Module):
         else:
             self.currentProfile = None
         active = self.currentProfile is not None
+        if active:
+            self.ui.profile_CB.setToolTip(self.currentProfile.shortDesc())
+        else:
+            self.ui.profile_CB.setToolTip("")
         self.ui.testSetGroup.setEnabled(active)
         self.ui.evaluate_PB.setEnabled(active)
         self.ui.remove_PB.setEnabled(active)
