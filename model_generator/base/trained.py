@@ -99,6 +99,18 @@ class Trained:
         """ Return a short description of the trained model """
         return "Dataset : {}\nFeatures: {}\nModel: {}\nEpochs: {}".format(self.dataset.dataSetName, self.features.name, self.model.name, self.epoch)
 
+    def writeManifest(self, filePath: str):
+        manifest = dict()
+        manifest['acoustic'] = self.features.getAcousticParameters()
+        manifest['feature'] = self.features.getParameters()
+        manifest['feature']["type"] =self.features.feature_type
+        manifest['model'] = dict()
+        manifest['model']["inputShape"] = self.features.feature_shape
+        manifest['model']["keyword"] = self.dataset.labels
+
+        with open(filePath, 'w') as f:
+            json.dump(manifest, f)
+
     @property
     def folder(self):
         return os.path.dirname(self.trainedFilePath)

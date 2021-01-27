@@ -31,6 +31,12 @@ class _Feature:
     def getParameters(self) -> dict:
         return dict()
 
+    def getAcousticParameters(self):
+        manifest = dict()
+        for attr in ["sample_rate", "encoding", "sample_length", "use_emphasis", "emphasis_factor", "window_length", "window_stride", "window_fun"]:
+            manifest[attr] = self.__getattribute__(attr)
+        return manifest
+
     def generateManifest(self):
         output = dict()
         output["name"] = self.name
@@ -97,6 +103,12 @@ class MFCC_Features(_Feature):
                 "n_filters" : self.n_filters,
                 "n_coefs" : self.n_coefs,
                 "use_logenergy" : self.use_logenergy}
+    
+    def getAcousticParameters(self):
+        manifest = dict()
+        for attr in ["sample_rate", "encoding", "sample_length", "use_emphasis", "emphasis_factor", "window_length", "window_stride", "window_fun"]:
+            manifest[attr] = self.__getattribute__(attr)
+        return manifest
 
     def write(self):
         with open(self.featureFile, 'w') as f:

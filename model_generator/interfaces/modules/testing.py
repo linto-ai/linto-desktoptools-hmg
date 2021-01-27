@@ -72,11 +72,11 @@ class Testing(_Module):
             self.currentProfile = None
             self.ui.test_PB.setEnabled(False)
         active = self.currentProfile is not None
-        self.ui.profile_CB.setToolTip(self.currentProfile.shortDesc())
         self.ui.test_PB.setEnabled(active)
 
     def setCurrentProfile(self, name):
         self.currentProfile = self.project.getTrained(name)
+        self.ui.profile_CB.setToolTip(self.currentProfile.shortDesc())
         self.chart.clear()
         self.inferenceEngine = InferenceEngine(self.currentProfile.features, self.currentProfile.trainedModelPath, self.ui.threshold.value())
         self.inferenceEngine.prediction.connect(self.chart.addValue)
