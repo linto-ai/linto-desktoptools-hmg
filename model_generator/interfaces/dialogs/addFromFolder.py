@@ -2,7 +2,7 @@ import os
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from base.dataset_new import DataSet
+from base import DataSet
 from .ui.addfromfolder_ui import Ui_Dialog
 
 if getattr(sys, 'frozen', False):

@@ -6,10 +6,10 @@ import json
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from base.project_new import Project
+from base import Project
 from interfaces.ui.home_ui import Ui_home
-from scripts.qtutils import create_infoline_layout, create_horizontal_line, empty_layout
-from interfaces.create_dialog import CreateDialog
+from interfaces.utils.qtutils import create_infoline_layout, create_horizontal_line, empty_layout
+from interfaces.dialogs import CreateProjectDialog
 
 if getattr(sys, 'frozen', False):
     DIR_PATH = os.path.dirname(sys.executable)
@@ -77,12 +77,11 @@ class Home(QtWidgets.QWidget):
             err_box.exec()
         else:
             self.project_openned.emit(self.project)
-
-        self.ui.open_project_string.setText(file_path)
-        self.is_openned = True
+            self.ui.open_project_string.setText(file_path)
+            self.is_openned = True
             
     def _on_create_project(self):
-        dialog = CreateDialog(self, self.ui.new_project_name.text(), self.ui.new_project_location.text())
+        dialog = CreateProjectDialog(self, self.ui.new_project_name.text(), self.ui.new_project_location.text())
         dialog.show()
         dialog.on_create.connect(self._on_project_created)
 
@@ -94,6 +93,9 @@ class Home(QtWidgets.QWidget):
         
     def on_project_openned(self):
         self.update_user_prefs()
+
+    def on_project_closed(self):
+        self.is_openned = False
         
     def load_user_prefs(self):
         """ 
@@ -123,22 +125,3 @@ class Home(QtWidgets.QWidget):
             self.user_pref['recent_projects'].reverse()
             self.user_pref['recent_projects'] = self.user_pref['recent_projects'][:self.user_pref['nmax_recent']]
         json.dump(self.user_pref, open(os.path.join(DIR_PATH, '.user_preferences.json'), 'w'))
-
-class Graph_rep (QtWidgets.QLabel):
-    """
-    Create a visual representation of a given model.  
-    """
-    def __init__(self, project):
-        super().__init__()
-        self.project = project
-        if project.model_info['set']:
-            model_path = self.project.model_path
-            from scripts.keras_functions import load_model
-            from tensorflow.keras.utils import plot_model
-            model_dir = os.path.dirname(model_path)
-            graph_path = os.path.join(model_dir, 'graph.png')
-            plot_model(load_model(model_path), to_file=graph_path, show_shapes=True)
-            pixmap = QtGui.QPixmap(graph_path)
-            self.setPixmap(pixmap)
-        else:
-            self.setText("Model haven't been created yet")
