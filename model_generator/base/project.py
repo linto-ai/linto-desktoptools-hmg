@@ -18,6 +18,7 @@ class Project(QtCore.QObject):
     feature_updated = QtCore.pyqtSignal(name='feature_updated')
     model_updated = QtCore.pyqtSignal(name='model_updated')
     trained_updated = QtCore.pyqtSignal(name='trained_updated')
+    
     def __init__(self):
         QtCore.QObject.__init__(self)
         self.project_location = ""

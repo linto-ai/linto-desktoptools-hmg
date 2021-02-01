@@ -59,12 +59,13 @@ class DataSet(QtCore.QObject):
             json.dump(datasetContent, f)
 
     def loadDataSet(self, datasetPath: str):
-        self.datasetFile = datasetPath
-        with open(datasetPath, 'r') as f:
-            datasetContent = json.load(f)
-        self.dataSetName = datasetContent["name"]
-        self.labels = datasetContent["labels"]
-        self.samples = [Sample(s) for s in datasetContent["samples"]]
+        if os.path.isfile(datasetPath):
+            self.datasetFile = datasetPath
+            with open(datasetPath, 'r') as f:
+                datasetContent = json.load(f)
+            self.dataSetName = datasetContent["name"]
+            self.labels = datasetContent["labels"]
+            self.samples = [Sample(s) for s in datasetContent["samples"]]
 
     ########################################################################
     ##### DATA MANAGEMENT
@@ -80,6 +81,8 @@ class DataSet(QtCore.QObject):
         self.samples.append(sample)
 
     def removeSamples(self, samples: list):
+        if self.datasetFile is not None:
+            self.loadDataSet(self.datasetFile)
         for sample in self.samples:
             if sample in samples:
                 self.samples.remove(sample)
@@ -91,17 +94,44 @@ class DataSet(QtCore.QObject):
             self.samples.append(Sample({"label": s["label"], "file" : os.path.join(manifestRoot, s["file"])}))
         self.saveDataSet()
         self.dataset_updated.emit()
+    
+    def removeFromFolders(self, folders : list):
+        """ Remove samples located in given folders"""
+        if self.datasetFile is not None:
+            self.loadDataSet(self.datasetFile)
+        for sample in reversed(self.samples):
+            if os.path.dirname(sample.file) in folders:
+                self.samples.remove(sample)
+        self.saveDataSet()
+        self.dataset_updated.emit()
 
+    def getSamplesFolders(self) -> dict:
+        """ Return a dict of folder: n_samples """
+        folders = dict()
+        for sample in self.samples:
+            folder = os.path.dirname(sample.file)
+            label = sample.label
+            if label == "": 
+                label = "non-keyword"
+            if folder not in folders.keys():
+                folders[folder] = dict()
+            if label not in folders[folder].keys():
+                folders[folder][label] = 0
+            folders[folder][label] += 1
+        return folders
 
     ########################################################################
     ##### SET MANIPULATION
     ########################################################################
+    
 
     def getsubsetbyLabel(self, label) -> list:
         label = label if label is not None else ""
         return [s for s in self.samples if s.label == label]
 
     def formSets(self, distribution: tuple) -> tuple:
+        if self.datasetFile is not None:
+            self.loadDataSet(self.datasetFile)
         '''  Divide the dataset into 3 sets (train, val, test) according to the [distribution] values'''
         train_set = DataSet("train", self.labels)
         val_set = DataSet("val", self.labels)
@@ -128,6 +158,8 @@ class DataSet(QtCore.QObject):
     ########################################################################
 
     def datasetInfo(self) -> str:
+        if self.datasetFile is not None:
+            self.loadDataSet(self.datasetFile)
         sep = "\n" + "-"*15 +"\n"
         percent = lambda n, d : "{:.2f}%".format(n/d*100)
         info = "Dataset Name : {}\n".format(self.dataSetName)
@@ -148,6 +180,8 @@ class DataSet(QtCore.QObject):
 
     def datasetValues(self) -> list:
         """ Return dataset data values as a list of tuples of (label, number of samples, percentage on dataset) """
+        if self.datasetFile is not None:
+            self.loadDataSet(self.datasetFile)
         values = []
         percent = lambda n, d : "{:.2f}%".format(n/(d if d > 0 else 1)*100)
         n_sample = len(self.samples)

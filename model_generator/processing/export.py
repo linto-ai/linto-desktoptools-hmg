@@ -16,7 +16,7 @@ def isTFLiteCompatible(model: _Model) -> tuple:
 def isTFJSCompatible(model: _Model) -> tuple:
     for layer in model.layers:
         if type(layer) is GRU_Layer:
-            if layer.reset_after == False:
+            if layer.reset_after == True:
                 return (False, "TFJS models need the GRU flag reset_after set to True.")
     return (True, "")
 

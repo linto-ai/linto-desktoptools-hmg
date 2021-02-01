@@ -264,7 +264,7 @@ class Ui_Form(object):
         self.targetAcc_DSB.setSuffix(_translate("Form", "%"))
         self.targetScoreSet_DSP.setItemText(0, _translate("Form", "train"))
         self.targetScoreSet_DSP.setItemText(1, _translate("Form", "val"))
-        self.label_7.setText(_translate("Form", "Accuraccy"))
+        self.label_7.setText(_translate("Form", "Accuracy"))
         self.label_8.setText(_translate("Form", "Batch Size"))
         self.shuffle_CB.setToolTip(_translate("Form", "<html><head/><body><p>Inputs are shuffled at each epoch.</p></body></html>"))
         self.shuffle_CB.setText(_translate("Form", "Shuffle"))

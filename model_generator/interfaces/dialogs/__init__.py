@@ -7,3 +7,4 @@ from .createProject import CreateProjectDialog
 from .createfeature import CreateFeature
 from .createmodel import CreateModel
 from .removeSamples import RemoveSamplesDialog
+from .removeSampleFolder import RemoveFolderSamplesDialog

@@ -43,7 +43,7 @@ class GRU_Layer(_Layer):
                  is_input: bool = True, 
                  is_output: bool = False,
                  unroll: bool = False,
-                 reset_after: bool = False,
+                 reset_after: bool = True,
                  is_required: bool = False):
         _Layer.__init__(self, is_input, is_output, is_required)
         

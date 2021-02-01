@@ -10,7 +10,7 @@ from interfaces.dialogs.createdialog import CreateDialog
 from interfaces.dialogs import ConfirmDelete
 from interfaces.dialogs.addFromFolder import AddFolderDialog
 from interfaces.dialogs.exportdataset import ExportDatasetDialog
-from interfaces.dialogs import SimpleDialog
+from interfaces.dialogs import SimpleDialog, RemoveFolderSamplesDialog
 
 class Data(_Module):
     moduleTitle= "Data"
@@ -41,13 +41,16 @@ class Data(_Module):
         self.updateDisplay()
         
         # CONNECT
+        self.ui.currentDataSet_CB.currentTextChanged.connect(self.onDataSetChanged)
+        self.currentDataset.dataset_updated.connect(self.updateDisplay)
+
+        ## buttons
         self.ui.createDataSet_PB.clicked.connect(self.onCreateDatasetClicked)
         self.ui.delete_PB.clicked.connect(self.onDeleteDatasetClicked)
-        self.ui.currentDataSet_CB.currentTextChanged.connect(self.onDataSetChanged)
         self.ui.addFromFolder_PB.clicked.connect(self.addFromFolder)
-        self.currentDataset.dataset_updated.connect(self.updateDisplay)
         self.ui.export_PB.clicked.connect(self.onExportClicked)
         self.ui.import_PB.clicked.connect(self.onImportClicked)
+        self.ui.remove_PB.clicked.connect(self.onRemoveClicked)
 
     ########################################################################
     ##### UI LOGIC
@@ -72,6 +75,12 @@ class Data(_Module):
         dialog = ExportDatasetDialog(self, self.currentDataset)
         dialog.show()
 
+
+    def onRemoveClicked(self):
+        dialog = RemoveFolderSamplesDialog(self, self.currentDataset.getSamplesFolders())
+        dialog.on_removed.connect(self.onRemoveSamples)
+        dialog.show()
+
     def populateDatasetCB(self):
         self.ui.currentDataSet_CB.clear()
         for ds in self.project.datasets:
@@ -83,9 +92,11 @@ class Data(_Module):
         self.ui.add_GB.setEnabled(dataset_existing)
         self.ui.addFromMan_PB.setEnabled(False) # TODO: implement
         self.ui.export_PB.setEnabled(dataset_existing)
+        self.ui.remove_PB.setEnabled(dataset_existing)
         self.ui.overview_TE.clear()
         self.ui.overview_TE.appendPlainText(self.currentDataset.datasetInfo())
         self.chart.updateChart(self.currentDataset.datasetValues())
+
 
     ########################################################################
     ##### PROCCESSING
@@ -120,6 +131,9 @@ class Data(_Module):
     def onAddSample(self, label: str, files: list):
         self.currentDataset.addSampleFiles(label, files)
         self.updateDisplay()
+
+    def onRemoveSamples(self, folders):
+        self.currentDataset.removeFromFolders(folders)
 
     def onImportClicked(self):
         def datasetLabels(manifest):
@@ -174,6 +188,9 @@ class Data(_Module):
         else:
             pass
             #TODO label matching
+
+    
+    
         
 
 class DataChart(QtChart.QChartView):

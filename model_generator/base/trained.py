@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 
 from base import DataSet
 from base.features_param import _Feature
@@ -26,6 +27,9 @@ class Trained:
         self.features = features
         self.model = model
 
+        if not os.path.isdir(self.featureFolder):
+            os.mkdir(self.featureFolder)
+
         train_set, val_set, test_set = self.dataset.formSets(distrib)
 
         train_set.saveDataSet(self.trainSetPath)
@@ -33,6 +37,24 @@ class Trained:
         test_set.saveDataSet(self.testSetPath)
 
         self.isSet = True
+        self.writeTrained()
+
+    def unSet(self):
+        if self.isTrained:
+            self.clearTraining()
+        for f in [self.trainSetPath, self.valSetPath, self.testSetPath]:
+            try:
+                os.remove(f)
+            except:
+                continue
+        
+        if os.path.isdir(self.featureFolder):
+            shutil.rmtree(self.featureFolder)
+
+        self.dataset = None
+        self.features = None
+        self.model = None
+        self.isSet = False
         self.writeTrained()
 
     def toDict(self) -> dict:
@@ -93,6 +115,7 @@ class Trained:
             os.remove(self.trainedModelPath)
         if os.path.isfile(self.logFilePath):
             os.remove(self.logFilePath)
+
         self.writeTrained()
 
     def shortDesc(self) -> str:

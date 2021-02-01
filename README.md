@@ -1,5 +1,3 @@
-# NEXT VERSION BRANCH (WIP) 
-
 ![version](https://img.shields.io/github/manifest-json/v/linto-ai/hmg)
 
 # Hotword Model Generator
@@ -9,7 +7,7 @@ HMG is a GUI tool designed to generate keyword spotting models.
 
 ## Introduction
 HMG allows you to:
-* Manage data
+* Manage datasets
 * Tune audio features
 * Tune model architecture and training parameters
 * Train your model
@@ -17,34 +15,21 @@ HMG allows you to:
 * Test your model
 * Export your model
 __________________
+
 ## Getting Started
-There are 2 options to use this software:
-* Using the binary release.
-* Cloning this repository
 
 ### Release
+Not available for now
 
-**Release version: Unavailable** 
-
-Binary have been generated using PyInstaller on Ubuntu 18.04.
-You can download the lastest release [there](https://github.com/linto-ai/hmg/releases/download/0.3/hmg-v0.3-ubuntu.tar.gz).
-
-1. Extract the archive
-```bash
-tar xzf $(ARCHIVE)
-```
-A ```hmg/``` folder shall be extracted.
-
-2. Launch the program
-```bash
-./hmg/hmg
-```
 ### From Source
 You can use the software from the repository.
 
 **Prerequisites**
 
-You need ```python3.x``` and ```python3-pip``` installed.
+System dependencies:
+
+* You need ```python3.x``` and ```python3-pip``` installed.
+* you need ```portaudio19-dev``` package installed
 
 There is a number of dependencies needed to run the software.
 They can be found in the ```requirements.txt``` file at the repository root.
@@ -63,8 +48,17 @@ python $(REPO_ROOT)/model_generator/main.py
 ./$(REPO_ROOT)/model_generator/main.py
 ```
 __________________
+
 ## Usage
-See the [wiki](https://github.com/linto-ai/linto-desktoptools-hmg/wiki)
+
+1. Create a project and specify your keyword(s).
+2. Create a dataset
+3. Create a feature profile
+4. Create a model architecture
+5. Create a trained model and train it
+6. Evaluate your model
+7. Export your model
+
 __________________
 ## Built using
 

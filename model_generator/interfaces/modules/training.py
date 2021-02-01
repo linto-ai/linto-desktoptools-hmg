@@ -103,14 +103,14 @@ class Training(_Module):
         for cb in [self.ui.dataset_CB, self.ui.features_CB, self.ui.model_CB]:
             active = active and cb.count() > 0
         self.ui.sets_Group.setEnabled(active)
+        self.ui.set_PB.setEnabled(active)
         if not active:
             return
         editable = active and not self.currentTrained.isSet
         self.ui.trainSet_SB.setEnabled(editable)
         self.ui.valSet_SB.setEnabled(editable)
         self.ui.testSet_SB.setEnabled(editable)
-        self.ui.set_PB.setText("Set Profile" if editable else "Change Profile")
-        self.ui.set_PB.setEnabled(editable)
+        self.ui.set_PB.setText("Set Profile" if editable else "Unset Profile")
     
     def updateTrainGroup(self):
         ready = self.currentTrained is not None and self.currentTrained.isSet
@@ -185,10 +185,10 @@ class Training(_Module):
 
     def onSetClicked(self):
         if self.currentTrained.isSet:
-            self.changeProfile()
+            self.unsetProfile()
         else:
             self.setupProfile()
-            self.project.trained_updated.emit()
+        self.project.trained_updated.emit()
 
     def onDeleteClicked(self):
         dialog = ConfirmDelete(self, "Delete Trained Model", "Do you want to delete", self.ui.profile_CB.currentText())
@@ -263,8 +263,9 @@ class Training(_Module):
         )
         self.updateUI()
     
-    def changeProfile(self):
-        pass
+    def unsetProfile(self):
+        self.currentTrained.unSet()
+        self.updateUI()
 
     ########################################################################
     ##### PROCCESSING
