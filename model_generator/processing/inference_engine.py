@@ -14,7 +14,6 @@ class InferenceEngine(QtCore.QObject):
     prediction = QtCore.pyqtSignal(float, list, name='project_updated') # On prediction emit (x_value, [predictions])
     sample_detected = QtCore.pyqtSignal(bytes, int, name='sample_detected') # On prediction emit (x_value, [predictions])
 
-    
     def __init__(self, features: _Feature, modelPath: str, threshold: float):
         QtCore.QObject.__init__(self)
         self.features = features

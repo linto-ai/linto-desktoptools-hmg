@@ -1,7 +1,7 @@
 ![version](https://img.shields.io/github/manifest-json/v/linto-ai/hmg)
 
 # Hotword Model Generator
-HMG is a GUI tool designed to generate keyword spotting models.
+HMG is a GUI tool designed to train, evaluate and export keyword spotting models.
 
 **DISCLAIMER: This is an rough version of a tool that haven't beed thoroughly tested, bug may (and probably will) occur. Please use the issue tracker to report them.**
 
@@ -52,8 +52,8 @@ __________________
 ## Usage
 
 1. Create a project and specify your keyword(s).
-2. Create a dataset
-3. Create a feature profile
+2. Create a dataset and import samples
+3. Create a features profile
 4. Create a model architecture
 5. Create a trained model and train it
 6. Evaluate your model

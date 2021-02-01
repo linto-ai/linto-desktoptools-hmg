@@ -36,9 +36,16 @@ class InfereChart(QtWidgets.QWidget):
         self.chartView.show()
 
     def addValue(self, xValue, yValue: list):
+        """ Add a single step values """
         for i, serie in enumerate(self.series):
             self.series[i].append(xValue, yValue[i])
         self.updateView(xValue)
+
+    def addValues(self, xValue: list, yValue: list):
+        for i, x in xValues:
+            for j, serie in enumerate(self.series):
+                self.series[j].append(x, yValue[i][j])
+        self.updateView(xValue[-1])
 
     def setThreshold(self, value):
         self.threshold = value
